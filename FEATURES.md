@@ -64,19 +64,19 @@
 - ✅ **Distributions:** by **day of week**, **hour of day**, **month**,
   **duration** (intraday/multiday) — count + performance.
 - ✅ **Tag breakdown** (P&L by tag/setup) and by symbol.
-- 🔜 Advanced metrics: expectancy, R-multiple stats, max consecutive win/loss,
-  std dev, MAE/MFE, Kelly %.
+- ✅ **A few advanced metrics:** expectancy, **R-multiple stats** (avg R, win/loss
+  R), **max consecutive wins/losses**.
+- 🔜 Further metrics: std dev, MAE/MFE, Kelly %.
 - 🔜 Win-vs-loss-days, Compare, intraday-duration buckets, price/volume &
   liquidity breakdowns.
 - 🔜 Gross/Net + $ / % / R view modes across all reports.
 - ⛔ Premium-style scores (SQN, K-Ratio, "Probability of Random Chance").
 
 ## 7. Dashboard  *(screenshot 4)*
-- ✅ **Compact MVP** (a handful of high-value widgets, not ~40):
-  Cumulative P&L, Win %, Profit factor, Total/Avg trade P&L, # trades,
-  mini calendar/recent days, **Open trades** list.
-- 🔜 More widgets: by day/hour/month, drawdown, daily volume, MFE/MAE, etc.
-- 🔜 **Edit Layout** / customizable widget grid; 30/60/90-day range.
+- 🔜 **Deferred for MVP** — Reports + Calendar cover the home-screen need for now.
+  When built, start **compact** (Cumulative P&L, Win %, Profit factor, Total/Avg
+  trade P&L, # trades, **Open trades** list) — not ~40 widgets.
+- 🔜 **Edit Layout** / customizable widget grid; 30/60/90-day range; more widgets.
 - ⛔ "Instrument ATR / RVOL / opening gap / day type" widgets (heavy data needs).
 
 ## 8. Cross-cutting / system
@@ -89,8 +89,14 @@
 
 ---
 
-## Proposed MVP cut (the "basics")
-Phases 1–5 in DESIGN.md §6 deliver the ✅ items: **Import → Trades list →
-Trade detail w/ chart + journaling → Calendar → basic Reports + compact
-Dashboard.** Everything 🔜 is a fast-follow; everything ⛔ is intentionally
-dropped because this is a private, single-user, local tool.
+## MVP cut (confirmed)
+The ✅ items deliver: **Import → Trades list → Trade detail (chart + journaling)
+→ Calendar → Reports (basics + a few advanced: expectancy, R-stats, max
+consecutive).** Decisions:
+- **Dashboard: deferred** — Reports + Calendar are the MVP home surface.
+- **Analytics: basics + a few advanced** (expectancy, R-multiple stats, max
+  consecutive win/loss); the rest is 🔜.
+- **Social / multi-user: dropped** (⛔) — private, single-user, local tool, no
+  sharing/accounts.
+
+Everything 🔜 is a fast-follow; ⛔ is intentionally out.
