@@ -10,6 +10,8 @@ build/
 data/journal.db
 data/journal.db-*
 data/uploads/
+# real broker exports used as parser fixtures
+data/samples/
 
 # Env
 .env

@@ -48,16 +48,19 @@ reflectively, and tracking performance over time.
 
 There are **two distinct data inputs**, both currently **manual CSV exports**:
 
-**A. Execution data (the trades) — DAS Trader or ThinkorSwim.**
-- Trading is done through **DAS Trader** (direct-access platform) on a **Schwab**
-  account; **ThinkorSwim (TOS)** is also available on the same account.
-- Both export at the **execution/fill level** — each row is a single buy or sell
-  with timestamp, price, quantity (and DAS adds route) — *not* pre-bundled
-  round-trip trades.
-- **Either source works; we're not locked in.** The existing chart prototype
-  already parses **two DAS formats** (see §8), so DAS is the path of least
-  resistance for v1. A TOS parser can be added behind the same importer
-  interface.
+**A. Execution data (the trades) — ThinkorSwim (primary), DAS (secondary).**
+- Trading is done through **DAS Trader** on a **Schwab** account; **ThinkorSwim
+  (TOS)** runs on the same account and exports the same fills.
+- **Decision: TOS is the primary execution source for v1.** Its *Account
+  Statement* export is stronger than the DAS log for our purposes (see §8 for
+  the full format spec):
+  - **`Pos Effect` = `TO OPEN` / `TO CLOSE`** on every fill → round-trip
+    matching becomes *authoritative* instead of FIFO-inferred.
+  - A built-in **Profits and Losses** section to **validate** our computed P&L.
+- DAS remains a **secondary** importer (the §8 prototype already parses two DAS
+  formats) behind the same interface, for when a TOS export isn't handy.
+- Both are **execution/fill level** — one row per buy/sell, *not* pre-bundled
+  round-trips.
 
 **B. Price/candle data (for the per-trade chart) — TradingView CSV export.**
 - OHLCV candles come from a **manual TradingView "Export chart data" CSV**
@@ -236,10 +239,14 @@ is a derived grouping of executions for one round-trip position.
 - `Execution` + `Trade` schema, FIFO matching engine, manual add/edit/delete,
   trade list, trade detail, derived P&L/R.
 
-### Phase 2 — Execution CSV import (DAS/TOS)
-- Upload a broker export, map columns → executions, run matching into trades,
-  with preview/confirm and row-hash dedupe. **Reuse the DAS parser + ET→UTC +
-  fill-aggregation logic from the §8 prototype**; add TOS as a second format.
+### Phase 2 — Execution CSV import (TOS primary, DAS secondary)
+- Parse the **TOS Account Statement** (§8 format): slice the `Account Trade
+  History` section → executions (use `Net Price`, `Pos Effect`), join `Cash
+  Balance` for fees, cross-check against the `Profits and Losses` section.
+- Run matching into trades (driven by `Pos Effect`), with preview/confirm and
+  row-hash dedupe. **Reuse the ET→UTC + fill-aggregation logic from the §8
+  prototype** (but make the TZ offset **DST-aware**, not hardcoded −4).
+- Add the **DAS** parser (two formats from the §8 prototype) as a second source.
 
 ### Phase 3 — Trade chart
 - Port the §8 candlestick + entry/exit-marker chart into the trade detail view;
@@ -269,9 +276,8 @@ is a derived grouping of executions for one round-trip position.
   (account already exists; can include extended hours) or a data provider
   (Polygon, Alpaca, etc.). Decision: ship v1 on manual TradingView CSV, treat
   API candles as the Phase 7 upgrade that also solves pre-market.
-- **DAS vs TOS for executions** — both are manual fill-level exports; either is
-  fine. Lean DAS for v1 since the parser already exists; add TOS later. (Need a
-  fresh sample of whichever to confirm current columns.)
+- ~~DAS vs TOS for executions~~ — **resolved: TOS primary** (Pos Effect +
+  built-in P&L), DAS secondary. See §8 for the confirmed TOS format.
 - **Pre-market coverage** — accept the RTH-only gap for v1, or require an
   extended-hours TradingView export per trade? (Resolved cleanly by API candles
   later.)
@@ -316,6 +322,41 @@ how it feeds this project:
 - **History:** evolved over a long chat (started pure-SVG, fixed candle slots,
   pan/zoom + momentum, price-range bug fixes when zoomed out) — see the shared
   thread "Trade entry and exit visualization tool".
+
+### TOS Account Statement format (primary execution source)
+- **Sample / fixture:** `data/samples/2026-03-04-AccountStatement.csv`
+  (gitignored — real trades; re-export to reproduce on another machine).
+- **One file, multiple stacked sections** separated by blank lines, each with its
+  own header row. The parser must locate sections by header, not read the whole
+  file as one table. Sections present:
+  1. **Cash Balance** — `DATE,TIME,TYPE,REF #,DESCRIPTION,Misc Fees,Commissions
+     & Fees,AMOUNT,BALANCE`. Fills as free-text description
+     (`BOT +100 TMDE @4.52`, `SOLD -2,180 AIFF @1.7117`). **Has fees** (Misc
+     Fees) and running cash balance.
+  2. **Account Order History** — every order incl. `CANCELED`/`REJECTED`, with
+     `Pos Effect`, `TIF`. Bonus data for journaling intent; not needed for core.
+  3. **Account Trade History** ⭐ **— primary execution table.**
+     `,Exec Time,Spread,Side,Qty,Pos Effect,Symbol,Type,Price,Net Price,Order
+     Type`. One row per fill. `Exec Time` = `M/D/YY H:MM:SS`.
+  4. **Profits and Losses** — per-symbol `P/L Day`, `P/L YTD`, etc. Use to
+     **validate** computed P&L.
+  5. Account Summary, plus empty Futures/Forex/Crypto stubs (ignore).
+- **Field mapping (Account Trade History → `Execution`):** `Exec Time`→
+  `executed_at`, `Side`(BUY/SELL)+signed `Qty`→`side`/`quantity`, `Symbol`,
+  **`Net Price`**→`price` (matches the cash ledger; `Price` can differ),
+  `Pos Effect`(TO OPEN/TO CLOSE)→drives round-trip matching. Fees come from the
+  **Cash Balance** section (join by time+symbol+qty, or just total them).
+- **Parsing gotchas:**
+  - **DST-aware ET→UTC.** Times are platform-local Eastern. This sample is
+    Mar 3–4 2026 → **EST (UTC−5)**, *before* DST (starts Mar 8). Do **not**
+    hardcode −4 like the chart prototype.
+  - Strip `="…"` wrapper on `REF #` and comma thousands separators
+    (`-2,180`, `90,439.83`).
+  - Use `Net Price`, not `Price`.
+  - Pre-market fills present (e.g. `06:34:07`) → reinforces extended-hours
+    candle need (§2-B).
+- **Account:** export is from the **Swing** account (`…SCHW (Swing)`),
+  commission-free; only tiny SEC/TAF Misc Fees.
 
 ### Reference: current journal tool (UI inspiration)
 - Four screenshots of the journal app currently in use define the target feature
