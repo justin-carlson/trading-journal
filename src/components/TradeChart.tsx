@@ -26,7 +26,11 @@ const timeFmt = new Intl.DateTimeFormat("en-US", {
   hour12: false,
 });
 
-function nearestIndex(candles: ChartCandle[], t: number): number {
+function candleIndexForMarker(candles: ChartCandle[], t: number): number {
+  const minuteStart = Math.floor(t / 60) * 60;
+  const containingIndex = candles.findIndex((c) => c.t === minuteStart);
+  if (containingIndex !== -1) return containingIndex;
+
   let best = 0;
   let bestDiff = Infinity;
   for (let i = 0; i < candles.length; i += 1) {
@@ -146,7 +150,7 @@ export default function TradeChart({
 
         {/* entry/exit markers */}
         {markers.map((m, i) => {
-          const idx = nearestIndex(candles, m.t);
+          const idx = candleIndexForMarker(candles, m.t);
           const mx = x(idx);
           const my = y(m.price);
           const s = 5;
