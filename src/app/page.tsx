@@ -19,7 +19,7 @@ async function counts() {
 const phases = [
   { n: 1, label: "Execution & trade model", done: true },
   { n: 2, label: "TOS import → trades", done: true },
-  { n: 3, label: "Trade chart + Massive candles", done: false },
+  { n: 3, label: "Trade chart + Massive candles", done: true },
   { n: 4, label: "Analytics", done: false },
   { n: 5, label: "Review & journaling", done: false },
 ];

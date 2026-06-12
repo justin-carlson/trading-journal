@@ -2,6 +2,7 @@ import Link from "next/link";
 import { desc, sql } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { fmtDate, fmtMoney, fmtPrice } from "@/lib/format";
+import { RowLink } from "./RowLink";
 
 export const dynamic = "force-dynamic";
 
@@ -76,9 +77,10 @@ export default async function TradesPage() {
               const net = gross == null ? null : gross - t.fees;
               const pos = (net ?? 0) >= 0;
               return (
-                <tr
+                <RowLink
                   key={t.id}
-                  className="border-b border-[var(--border)] last:border-0 hover:bg-[var(--surface)]"
+                  href={`/trades/${t.id}`}
+                  className="border-b border-[var(--border)] last:border-0 hover:bg-[var(--surface)] cursor-pointer"
                 >
                   <td className="px-3 py-2 whitespace-nowrap">{fmtDate(t.entryAt)}</td>
                   <td className="px-3 py-2 font-medium">{t.symbol}</td>
@@ -93,7 +95,7 @@ export default async function TradesPage() {
                     {net == null ? "—" : fmtMoney(net)}
                   </td>
                   <td className="px-3 py-2 text-[var(--muted)]">{t.status}</td>
-                </tr>
+                </RowLink>
               );
             })}
           </tbody>
