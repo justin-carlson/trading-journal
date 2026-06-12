@@ -1,28 +1,31 @@
 import Link from "next/link";
-import { desc, sql } from "drizzle-orm";
+import { and, desc, gte, lte, sql } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { fmtDate, fmtMoney, fmtPrice } from "@/lib/format";
+import { netPnl } from "@/lib/pnl";
+import { etDateString, etDayRange } from "@/lib/time";
 import { RowLink } from "./RowLink";
 
 export const dynamic = "force-dynamic";
 
-function grossPnl(t: {
-  side: string;
-  quantity: number;
-  avgEntryPrice: number | null;
-  avgExitPrice: number | null;
-}): number | null {
-  if (t.avgEntryPrice == null || t.avgExitPrice == null) return null;
-  const dir = t.side === "long" ? 1 : -1;
-  return (t.avgExitPrice - t.avgEntryPrice) * dir * t.quantity;
-}
+async function loadTrades(date?: string) {
+  const where =
+    date && /^\d{4}-\d{2}-\d{2}$/.test(date)
+      ? (() => {
+          const { start, end } = etDayRange(date);
+          return and(gte(schema.trades.entryAt, start), lte(schema.trades.entryAt, end));
+        })()
+      : undefined;
 
-async function loadTrades() {
-  const rows = await db
+  let rows = await db
     .select()
     .from(schema.trades)
+    .where(where)
     .orderBy(desc(schema.trades.entryAt))
-    .limit(200);
+    .limit(500);
+
+  // The epoch window has slack for DST; refine to the exact ET date.
+  if (date) rows = rows.filter((t) => t.entryAt != null && etDateString(t.entryAt) === date);
 
   const execCounts = await db
     .select({ tradeId: schema.executions.tradeId, n: sql<number>`count(*)` })
@@ -30,22 +33,38 @@ async function loadTrades() {
     .groupBy(schema.executions.tradeId);
 
   const countByTrade = new Map(execCounts.map((r) => [r.tradeId, r.n]));
-  return rows.map((t) => ({ ...t, execs: countByTrade.get(t.id) ?? 0 }));
+  return rows.slice(0, 200).map((t) => ({ ...t, execs: countByTrade.get(t.id) ?? 0 }));
 }
 
-export default async function TradesPage() {
-  const trades = await loadTrades();
+export default async function TradesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ date?: string }>;
+}) {
+  const { date } = await searchParams;
+  const trades = await loadTrades(date);
 
   if (trades.length === 0) {
     return (
       <div className="max-w-3xl">
         <h1 className="text-xl font-semibold tracking-tight">Trades</h1>
         <p className="text-sm text-[var(--muted)] mt-2">
-          No trades yet.{" "}
-          <Link href="/import" className="text-[#58a6ff] hover:underline">
-            Import a ThinkorSwim statement
-          </Link>{" "}
-          to get started.
+          {date ? (
+            <>
+              No trades on {fmtDate(etDayRange(date).start)}.{" "}
+              <Link href="/trades" className="text-[#58a6ff] hover:underline">
+                Show all
+              </Link>
+            </>
+          ) : (
+            <>
+              No trades yet.{" "}
+              <Link href="/import" className="text-[#58a6ff] hover:underline">
+                Import a ThinkorSwim statement
+              </Link>{" "}
+              to get started.
+            </>
+          )}
         </p>
       </div>
     );
@@ -56,7 +75,17 @@ export default async function TradesPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-baseline justify-between">
-        <h1 className="text-xl font-semibold tracking-tight">Trades</h1>
+        <div className="flex items-baseline gap-3">
+          <h1 className="text-xl font-semibold tracking-tight">Trades</h1>
+          {date && (
+            <span className="text-sm text-[var(--muted)]">
+              {fmtDate(etDayRange(date).start)} ·{" "}
+              <Link href="/trades" className="text-[#58a6ff] hover:underline">
+                clear
+              </Link>
+            </span>
+          )}
+        </div>
         <span className="text-xs text-[var(--muted)]">{trades.length} shown</span>
       </div>
 
@@ -73,8 +102,7 @@ export default async function TradesPage() {
           </thead>
           <tbody>
             {trades.map((t) => {
-              const gross = grossPnl(t);
-              const net = gross == null ? null : gross - t.fees;
+              const net = netPnl(t);
               const pos = (net ?? 0) >= 0;
               return (
                 <RowLink

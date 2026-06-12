@@ -77,3 +77,22 @@ export function zonedDateTimeToUtcMs(
 export function tosWallClockToEpochSeconds(date: string, time: string): number {
   return Math.round(zonedDateTimeToUtcMs(date, time, SOURCE_TZ) / 1000);
 }
+
+const etDateFmt = new Intl.DateTimeFormat("en-CA", {
+  timeZone: MARKET_TZ,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+/** ET market date (YYYY-MM-DD) for an epoch-seconds instant. */
+export function etDateString(epochSeconds: number): string {
+  return etDateFmt.format(new Date(epochSeconds * 1000));
+}
+
+/** Epoch-seconds bounds [start, endExclusive) of an ET market date. */
+export function etDayRange(date: string): { start: number; end: number } {
+  const start = Math.round(zonedDateTimeToUtcMs(date, "00:00:00", MARKET_TZ) / 1000);
+  // +26h covers DST; callers use it as an upper bound for "same ET day".
+  return { start, end: start + 26 * 3600 };
+}
