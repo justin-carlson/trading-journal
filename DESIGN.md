@@ -122,6 +122,9 @@ a v1 deliverable.
 - Emotional state / discipline tracking (e.g. followed plan? FOMO? revenge
   trade?).
 - Searchable journal of mistakes & lessons across trades.
+- Journal design details live in **[JOURNAL_DESIGN.md](JOURNAL_DESIGN.md)**:
+  root-level, text-first month/week/day/trade notes with emotion/process review
+  and trade notes rolling up into the Journal.
 
 ### 3.4 Trade Chart (entry/exit visualization)
 - Per-trade candlestick chart with **entry/exit markers** plotted on the

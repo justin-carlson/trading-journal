@@ -5,6 +5,7 @@ import { db, schema } from "@/lib/db";
 import { getCandles } from "@/lib/candles";
 import TradeChart from "@/components/TradeChart";
 import { fmtDate, fmtMoney, fmtPrice } from "@/lib/format";
+import { addTradeNoteAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,12 @@ export default async function TradeDetailPage({
     .where(eq(schema.executions.tradeId, tradeId))
     .orderBy(asc(schema.executions.executedAt));
 
+  const notes = await db
+    .select()
+    .from(schema.journalEntries)
+    .where(eq(schema.journalEntries.tradeId, tradeId))
+    .orderBy(asc(schema.journalEntries.createdAt));
+
   const lastAt = trade.exitAt ?? execs.at(-1)?.executedAt ?? trade.entryAt ?? 0;
   const firstAt = trade.entryAt ?? execs[0]?.executedAt ?? lastAt;
   const pad = 20 * 60; // 20 minutes either side
@@ -78,9 +85,9 @@ export default async function TradeDetailPage({
 
   return (
     <div className="max-w-4xl space-y-6">
-      <div className="flex items-center gap-3">
-        <Link href="/trades" className="text-sm text-[#58a6ff] hover:underline">
-          ← Trades
+      <div className="space-y-2">
+        <Link href="/trades" className="inline-flex h-10 items-center rounded-md border border-[var(--border)] px-3 text-sm font-semibold text-[var(--muted)] transition-colors hover:border-[var(--blue)] hover:text-[var(--foreground)]">
+          &lt; Back
         </Link>
         <h1 className="text-xl font-semibold tracking-tight">
           {trade.symbol}
@@ -99,18 +106,18 @@ export default async function TradeDetailPage({
         {stats.map((s) => (
           <div
             key={s.label}
-            className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2"
+            className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-3"
           >
             <div
-              className="text-sm font-semibold tabular-nums"
+              className="text-2xl font-semibold tabular-nums"
               style={s.color ? { color: s.color } : undefined}
             >
               {s.value}
               {s.sub && (
-                <span className="ml-1.5 text-xs font-normal">{s.sub}</span>
+                <span className="ml-1.5 text-sm font-normal">{s.sub}</span>
               )}
             </div>
-            <div className="text-[10px] uppercase tracking-wide text-[var(--muted)]">
+            <div className="mt-1 text-sm font-semibold text-[var(--muted)]">
               {s.label}
             </div>
           </div>
@@ -165,6 +172,69 @@ export default async function TradeDetailPage({
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section className="space-y-3">
+        <div>
+          <h2 className="text-sm font-semibold text-[var(--muted)] uppercase tracking-wide">
+            Trade Journal
+          </h2>
+          <p className="mt-1 text-sm text-[var(--muted)]">
+            Add a lightweight trade note here. It will surface in the Journal under this trade&apos;s day, week, and month.
+          </p>
+        </div>
+
+        <form action={addTradeNoteAction} className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+          <input type="hidden" name="tradeId" value={trade.id} />
+          <div className="grid gap-3 md:grid-cols-[1fr_220px]">
+            <label className="space-y-1">
+              <span className="block text-sm font-semibold text-[var(--muted)]">Note</span>
+              <textarea
+                name="note"
+                rows={4}
+                placeholder="What happened? Good trade, bad trade, rule break, lesson, emotion, setup quality..."
+                className="w-full resize-y rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm outline-none focus:border-[var(--blue)]"
+              />
+            </label>
+            <label className="space-y-1">
+              <span className="block text-sm font-semibold text-[var(--muted)]">Emotion / process</span>
+              <select
+                name="emotionalState"
+                className="h-10 w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 text-sm outline-none focus:border-[var(--blue)]"
+                defaultValue=""
+              >
+                <option value="">Optional</option>
+                <option value="Good trade">Good trade</option>
+                <option value="Bad trade">Bad trade</option>
+                <option value="Rule break">Rule break</option>
+                <option value="Revenge trade">Revenge trade</option>
+                <option value="Chased">Chased</option>
+                <option value="Overtraded">Overtraded</option>
+                <option value="Needs review">Needs review</option>
+              </select>
+              <button type="submit" className="mt-3 h-10 rounded-md border border-[var(--blue)] px-3 text-sm font-semibold text-[var(--foreground)] hover:bg-[var(--background)]">
+                Add note
+              </button>
+            </label>
+          </div>
+        </form>
+
+        {notes.length > 0 && (
+          <div className="space-y-2">
+            {notes.map((note) => (
+              <div key={note.id} className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
+                {note.emotionalState && (
+                  <div className="mb-2 inline-flex rounded-md border border-[var(--border)] px-2 py-1 text-xs font-semibold text-[var(--muted)]">
+                    {note.emotionalState}
+                  </div>
+                )}
+                <p className="whitespace-pre-wrap text-sm leading-6 text-[var(--foreground)]">
+                  {note.lessons || note.thesis || note.whatWentWell || note.whatWentWrong || "No note text."}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

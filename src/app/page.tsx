@@ -4,7 +4,6 @@ import { db, schema } from "@/lib/db";
 import { netPnl } from "@/lib/pnl";
 import { etDateString } from "@/lib/time";
 import { fmtDate, fmtMoney } from "@/lib/format";
-import ImportForm from "@/components/ImportForm";
 import CumulativePnlChart, { type PnlPoint, type PnlSeries } from "@/components/CumulativePnlChart";
 import { RowLink } from "./trades/RowLink";
 
@@ -76,9 +75,9 @@ export default async function Home() {
     return { points, trades };
   }
 
-  // current week (Sun–Sat) containing today
-  const weekStart = isoAddDays(todayStr, -isoWeekday(todayStr));
-  const weekDates = Array.from({ length: 7 }, (_, i) => isoAddDays(weekStart, i));
+  // current trading week (Mon-Fri) containing today
+  const weekStart = isoAddDays(todayStr, -((isoWeekday(todayStr) + 6) % 7));
+  const weekDates = Array.from({ length: 5 }, (_, i) => isoAddDays(weekStart, i));
   const weekSeries = cumulativeSeries(weekDates, (d) => d.slice(5));
   const weekPnl = weekSeries.points.at(-1)?.value ?? 0;
 
@@ -123,33 +122,17 @@ export default async function Home() {
 
   return (
     <div className="max-w-4xl space-y-8">
-      <div className="flex items-start justify-between gap-4">
-        <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
-        <ImportForm />
-      </div>
+      <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
 
       {trades.length === 0 ? (
         <p className="text-sm text-[var(--muted)]">
-          No trades yet — import a statement above to get started.
+          No trades yet — import a statement to get started.
         </p>
       ) : (
         <>
-          <section className="grid grid-cols-4 gap-3">
-            {stats.map((s) => (
-              <div key={s.label} className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
-                <div className="text-2xl font-semibold tabular-nums" style={s.color ? { color: s.color } : undefined}>
-                  {s.value}
-                </div>
-                <div className="text-xs text-[var(--muted)] mt-1">{s.label}</div>
-              </div>
-            ))}
-          </section>
-
-          <CumulativePnlChart week={weekSeries} month={monthSeries} year={yearSeries} />
-
           <section className="space-y-2">
             <h2 className="text-sm font-semibold text-[var(--muted)] uppercase tracking-wide">This week</h2>
-            <div className="grid grid-cols-7 gap-1.5">
+            <div className="grid grid-cols-5 gap-1.5">
               {weekDates.map((d) => {
                 const agg = byDate.get(d);
                 const { wd, day } = dayLabel(d);
@@ -157,24 +140,22 @@ export default async function Home() {
                 const pos = agg ? agg.pnl >= 0 : false;
                 const cell = (
                   <div
-                    className="rounded-md border p-2 h-20 flex flex-col"
+                    className="rounded-md border p-3 h-24 flex flex-col"
                     style={{
                       borderColor: today ? "#58a6ff" : "var(--border)",
-                      background: agg
-                        ? pos ? "rgba(38,166,65,0.12)" : "rgba(232,64,64,0.12)"
-                        : "var(--surface)",
+                      background: "var(--surface)",
                     }}
                   >
-                    <span className="text-[11px] text-[var(--muted)]">{wd} {day}</span>
+                    <span className="text-sm font-semibold text-[var(--muted)]">{wd} {day}</span>
                     {agg ? (
                       <span className="mt-auto">
-                        <span className="block text-sm font-semibold tabular-nums" style={{ color: pos ? "var(--green)" : "var(--red)" }}>
+                        <span className="block text-base font-semibold tabular-nums" style={{ color: pos ? "var(--green)" : "var(--red)" }}>
                           {fmtMoney(agg.pnl)}
                         </span>
-                        <span className="block text-[10px] text-[var(--muted)]">{agg.trades} {agg.trades === 1 ? "trade" : "trades"}</span>
+                        <span className="block text-sm font-semibold text-[var(--muted)]">{agg.trades} {agg.trades === 1 ? "trade" : "trades"}</span>
                       </span>
                     ) : (
-                      <span className="mt-auto text-[11px] text-[var(--muted)]">—</span>
+                      <span className="mt-auto text-base font-semibold text-[var(--muted)]">—</span>
                     )}
                   </div>
                 );
@@ -186,6 +167,19 @@ export default async function Home() {
               })}
             </div>
           </section>
+
+          <section className="grid grid-cols-4 gap-3">
+            {stats.map((s) => (
+              <div key={s.label} className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
+                <div className="text-2xl font-semibold tabular-nums" style={s.color ? { color: s.color } : undefined}>
+                  {s.value}
+                </div>
+                <div className="text-sm font-semibold text-[var(--muted)] mt-1">{s.label}</div>
+              </div>
+            ))}
+          </section>
+
+          <CumulativePnlChart week={weekSeries} month={monthSeries} year={yearSeries} />
 
           <section className="space-y-2">
             <div className="flex items-baseline justify-between">

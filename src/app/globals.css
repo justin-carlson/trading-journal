@@ -1,14 +1,27 @@
 @import "tailwindcss";
 
-/* Dark trading-app aesthetic (matches the prototype palette). */
 :root {
-  --background: #0d0f11;
-  --surface: #13161a;
-  --border: #1f2328;
+  --background: #090b0d;
+  --surface: #1d2229;
+  --border: #343c46;
   --foreground: #c9d1d9;
   --muted: #6e7681;
-  --green: #26a641;
-  --red: #e84040;
+  --green: #1db26b;
+  --red: #f05143;
+  --blue: #58a6ff;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --background: #f6f8fa;
+  --surface: #ffffff;
+  --border: #d0d7de;
+  --foreground: #24292f;
+  --muted: #57606a;
+  --green: #1db26b;
+  --red: #f05143;
+  --blue: #0969da;
+  color-scheme: light;
 }
 
 @theme inline {

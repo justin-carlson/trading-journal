@@ -8,6 +8,8 @@ Built for single-user, private use. Data lives locally in SQLite.
 ## Status
 
 Early design. See [DESIGN.md](DESIGN.md) for the full plan, scope, and phasing.
+See [JOURNAL_DESIGN.md](JOURNAL_DESIGN.md) for the text-first review and
+coaching journal model.
 
 ## Planned stack
 
