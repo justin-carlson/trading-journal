@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { and, gte, lte, sql } from "drizzle-orm";
+import { and, eq, gte, lte, sql } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
+import { getActiveAccount } from "@/lib/accountScope";
 import { fmtDate, fmtMoney, fmtPrice } from "@/lib/format";
 import { grossPnl, netPnl } from "@/lib/pnl";
 import { etDateString, etDayRange } from "@/lib/time";
@@ -144,17 +145,18 @@ function dateRangeFor(filters: TradeFilters): { from: string; to: string } | und
   return undefined;
 }
 
-async function loadTrades(filters: TradeFilters) {
+async function loadTrades(filters: TradeFilters, accountId: number) {
   const { symbol, side, tag, sort, dir, perPage } = filters;
   const range = dateRangeFor(filters);
+  const accountWhere = eq(schema.trades.accountId, accountId);
   const where =
     range
       ? (() => {
           const { start } = etDayRange(range.from);
           const { end } = etDayRange(range.to);
-          return and(gte(schema.trades.entryAt, start), lte(schema.trades.entryAt, end));
+          return and(accountWhere, gte(schema.trades.entryAt, start), lte(schema.trades.entryAt, end));
         })()
-      : undefined;
+      : accountWhere;
 
   let rows = await db
     .select()
@@ -401,6 +403,7 @@ export default async function TradesPage({
   }>;
 }) {
   const filters = parseSearchParams(await searchParams);
+  const activeAccount = await getActiveAccount();
   if (filters.view === "review") {
     const reviewPreset: ReviewPreset =
       filters.date || filters.preset === "today"
@@ -420,12 +423,12 @@ export default async function TradesPage({
             <ReviewRangeToggle filters={filters} />
           </div>
         </div>
-        <TradeReview preset={reviewPreset} date={reviewDate} from={filters.from} returnTo={reviewHref} />
+        <TradeReview preset={reviewPreset} date={reviewDate} from={filters.from} returnTo={reviewHref} accountId={activeAccount.id} />
       </div>
     );
   }
 
-  const { trades, total, page, totalPages } = await loadTrades(filters);
+  const { trades, total, page, totalPages } = await loadTrades(filters, activeAccount.id);
   const tagOptions = await loadTagOptions();
   const date = filters.date;
   const activePreset: DatePreset = date ? "custom" : filters.preset;
@@ -482,7 +485,7 @@ export default async function TradesPage({
           </div>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-[1.2fr_1fr_1fr_1fr_auto]">
+        <div className="grid gap-3 md:grid-cols-[1.2fr_1fr_1fr_auto]">
           <label className="space-y-1">
             <span className="block text-sm font-semibold text-[var(--muted)]">Symbol</span>
             <input
@@ -519,20 +522,6 @@ export default async function TradesPage({
               <option value="">All sides</option>
               <option value="long">Long</option>
               <option value="short">Short</option>
-            </select>
-          </label>
-
-          <label className="space-y-1">
-            <span className="block text-sm font-semibold text-[var(--muted)]">Account</span>
-            <select
-              name="account"
-              defaultValue={filters.account ?? ""}
-              className="h-10 w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-sm outline-none focus:border-[#58a6ff]"
-            >
-              <option value="">All accounts</option>
-              <option value="paper">Paper trading</option>
-              <option value="tos">Thinkorswim</option>
-              <option value="broker-2">Broker account 2</option>
             </select>
           </label>
 

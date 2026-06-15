@@ -218,6 +218,12 @@ function setupSchema(db) {
       hash TEXT NOT NULL,
       created_at NUMERIC
     );
+    CREATE TABLE "accounts" (
+      "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+      "name" text NOT NULL,
+      "created_at" integer DEFAULT (unixepoch()) NOT NULL
+    );
+    CREATE UNIQUE INDEX "accounts_name_unique" ON "accounts" ("name");
     CREATE TABLE "attachments" (
       "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
       "trade_id" integer NOT NULL,
@@ -248,22 +254,27 @@ function setupSchema(db) {
       "route" text,
       "pos_effect" text,
       "trade_id" integer,
+      "account_id" integer,
       "import_batch_id" integer,
       "source_row_hash" text,
       FOREIGN KEY ("trade_id") REFERENCES "trades"("id") ON UPDATE no action ON DELETE no action,
+      FOREIGN KEY ("account_id") REFERENCES "accounts"("id") ON UPDATE no action ON DELETE no action,
       FOREIGN KEY ("import_batch_id") REFERENCES "import_batches"("id") ON UPDATE no action ON DELETE no action
     );
-    CREATE UNIQUE INDEX "executions_source_row_hash_unq" ON "executions" ("source_row_hash");
+    CREATE UNIQUE INDEX "executions_source_row_hash_account_unq" ON "executions" ("source_row_hash","account_id");
     CREATE TABLE "import_batches" (
       "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+      "account_id" integer,
       "kind" text NOT NULL,
       "source" text NOT NULL,
       "file_name" text,
       "row_count" integer DEFAULT 0 NOT NULL,
-      "imported_at" integer DEFAULT (unixepoch()) NOT NULL
+      "imported_at" integer DEFAULT (unixepoch()) NOT NULL,
+      FOREIGN KEY ("account_id") REFERENCES "accounts"("id") ON UPDATE no action ON DELETE no action
     );
     CREATE TABLE "journal_entries" (
       "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+      "account_id" integer,
       "trade_id" integer,
       "scope" text DEFAULT 'trade' NOT NULL,
       "scope_key" text,
@@ -274,6 +285,7 @@ function setupSchema(db) {
       "followed_plan" integer,
       "emotional_state" text,
       "created_at" integer DEFAULT (unixepoch()) NOT NULL,
+      FOREIGN KEY ("account_id") REFERENCES "accounts"("id") ON UPDATE no action ON DELETE no action,
       FOREIGN KEY ("trade_id") REFERENCES "trades"("id") ON UPDATE no action ON DELETE no action
     );
     CREATE TABLE "tags" (
@@ -290,6 +302,7 @@ function setupSchema(db) {
     );
     CREATE TABLE "trades" (
       "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+      "account_id" integer,
       "symbol" text NOT NULL,
       "side" text NOT NULL,
       "quantity" integer NOT NULL,
@@ -303,7 +316,8 @@ function setupSchema(db) {
       "setup" text,
       "status" text DEFAULT 'open' NOT NULL,
       "created_at" integer DEFAULT (unixepoch()) NOT NULL,
-      "updated_at" integer DEFAULT (unixepoch()) NOT NULL
+      "updated_at" integer DEFAULT (unixepoch()) NOT NULL,
+      FOREIGN KEY ("account_id") REFERENCES "accounts"("id") ON UPDATE no action ON DELETE no action
     );
     PRAGMA foreign_keys=ON;
   `);
@@ -311,19 +325,20 @@ function setupSchema(db) {
 
 function buildInsertStatements(db) {
   return {
-    batch: db.prepare("INSERT INTO import_batches (kind, source, file_name, row_count, imported_at) VALUES (?, ?, ?, ?, ?)"),
+    account: db.prepare("INSERT INTO accounts (name) VALUES (?)"),
+    batch: db.prepare("INSERT INTO import_batches (account_id, kind, source, file_name, row_count, imported_at) VALUES (?, ?, ?, ?, ?, ?)"),
     tag: db.prepare("INSERT INTO tags (name) VALUES (?)"),
     tradeTag: db.prepare("INSERT OR IGNORE INTO trade_tags (trade_id, tag_id) VALUES (?, ?)"),
     trade: db.prepare(`
       INSERT INTO trades (
-        symbol, side, quantity, avg_entry_price, entry_at, avg_exit_price, exit_at, fees,
+        account_id, symbol, side, quantity, avg_entry_price, entry_at, avg_exit_price, exit_at, fees,
         stop_loss, target, setup, status, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `),
     execution: db.prepare(`
       INSERT INTO executions (
-        symbol, side, quantity, price, executed_at, fees, route, pos_effect, trade_id, import_batch_id, source_row_hash
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        account_id, symbol, side, quantity, price, executed_at, fees, route, pos_effect, trade_id, import_batch_id, source_row_hash
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `),
     candle: db.prepare(`
       INSERT OR IGNORE INTO candles (symbol, timeframe, t, o, h, l, c, vol)
@@ -331,8 +346,8 @@ function buildInsertStatements(db) {
     `),
     journal: db.prepare(`
       INSERT INTO journal_entries (
-        trade_id, scope, scope_key, thesis, what_went_well, what_went_wrong, lessons, followed_plan, emotional_state, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        account_id, trade_id, scope, scope_key, thesis, what_went_well, what_went_wrong, lessons, followed_plan, emotional_state, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `),
   };
 }
@@ -368,7 +383,7 @@ function round(value, decimals = 4) {
   return Number(value.toFixed(decimals));
 }
 
-function createTrade(stmts, batchId, tagIds, date, plan, sequence) {
+function createTrade(stmts, accountId, batchId, tagIds, date, plan, sequence) {
   const [symbol, targetPnl, label] = plan;
   const minute = randInt(18, 340);
   const entryAt = easternEpoch(date, 9, 30 + minute, randInt(0, 40));
@@ -381,6 +396,7 @@ function createTrade(stmts, batchId, tagIds, date, plan, sequence) {
   const exit = side === "long" ? round(entry + perShareMove, 4) : round(entry - perShareMove, 4);
   const createdAt = entryAt - randInt(60, 240);
   const tradeInfo = stmts.trade.run(
+    accountId,
     symbol,
     side,
     quantity,
@@ -404,6 +420,7 @@ function createTrade(stmts, batchId, tagIds, date, plan, sequence) {
 
   entryPartials.forEach((qty, index) => {
     stmts.execution.run(
+      accountId,
       symbol,
       openingSide,
       qty,
@@ -420,6 +437,7 @@ function createTrade(stmts, batchId, tagIds, date, plan, sequence) {
 
   exitPartials.forEach((qty, index) => {
     stmts.execution.run(
+      accountId,
       symbol,
       closingSide,
       qty,
@@ -440,6 +458,7 @@ function createTrade(stmts, batchId, tagIds, date, plan, sequence) {
   if (random() > 0.58 || Object.hasOwn(namedDayPlans, date)) {
     const template = tradeNoteTemplates.find((item) => item.label === label) ?? pick(tradeNoteTemplates);
     stmts.journal.run(
+      accountId,
       tradeId,
       "trade",
       date,
@@ -475,7 +494,8 @@ function buildPlansForDate(date) {
 
 function seed(db) {
   const stmts = buildInsertStatements(db);
-  const batch = stmts.batch.run("executions", "demo_seed", "tradingjournaldemo.seed", 0, easternEpoch("2026-06-14", 18, 0));
+  const accountId = Number(stmts.account.run("Live Account").lastInsertRowid);
+  const batch = stmts.batch.run(accountId, "executions", "demo_seed", "tradingjournaldemo.seed", 0, easternEpoch("2026-06-14", 18, 0));
   const batchId = Number(batch.lastInsertRowid);
   const tagIds = new Map();
 
@@ -500,7 +520,7 @@ function seed(db) {
     const plans = buildPlansForDate(date);
     tradeCountByDate.set(date, plans.length);
     for (const plan of plans) {
-      const tradePlan = createTrade(stmts, batchId, tagIds, date, plan, sequence);
+      const tradePlan = createTrade(stmts, accountId, batchId, tagIds, date, plan, sequence);
       const key = `${date}|${tradePlan.symbol}`;
       const list = candlePlans.get(key) ?? [];
       list.push(tradePlan);
@@ -516,6 +536,7 @@ function seed(db) {
 
   for (const [month, text] of Object.entries(monthNotes)) {
     stmts.journal.run(
+      accountId,
       null,
       "month",
       month,
@@ -533,6 +554,7 @@ function seed(db) {
   for (const date of dates) {
     if (random() > 0.55 || date.startsWith("2026-06")) {
       stmts.journal.run(
+        accountId,
         null,
         "day",
         date,
@@ -550,6 +572,7 @@ function seed(db) {
     if (!seenWeeks.has(start)) {
       seenWeeks.add(start);
       stmts.journal.run(
+        accountId,
         null,
         "week",
         start,
@@ -564,7 +587,7 @@ function seed(db) {
     }
   }
 
-  stmts.batch.run("candles", "demo_seed", "tradingjournaldemo.seed", candlePlans.size, easternEpoch("2026-06-14", 18, 1));
+  stmts.batch.run(accountId, "candles", "demo_seed", "tradingjournaldemo.seed", candlePlans.size, easternEpoch("2026-06-14", 18, 1));
 }
 
 mkdirSync(dirname(outputPath), { recursive: true });

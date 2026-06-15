@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { asc, eq } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
+import { getActiveAccount } from "@/lib/accountScope";
 import { getCandles } from "@/lib/candles";
 import TradeChart from "@/components/TradeChart";
 import TradeJournalNote from "@/components/TradeJournalNote";
@@ -46,11 +47,12 @@ export default async function TradeDetailPage({
   const tradeId = Number(id);
   if (!Number.isInteger(tradeId)) notFound();
   const backHref = returnTo?.startsWith("/") && !returnTo.startsWith("//") ? returnTo : "/trades";
+  const activeAccount = await getActiveAccount();
 
   const trade = (
     await db.select().from(schema.trades).where(eq(schema.trades.id, tradeId)).limit(1)
   )[0];
-  if (!trade) notFound();
+  if (!trade || trade.accountId !== activeAccount.id) notFound();
 
   const execs = await db
     .select()

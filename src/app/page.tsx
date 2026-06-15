@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
+import { getActiveAccount } from "@/lib/accountScope";
 import { netPnl } from "@/lib/pnl";
 import { etDateString } from "@/lib/time";
 import { fmtDate, fmtMoney } from "@/lib/format";
@@ -35,10 +36,12 @@ export default async function Home() {
   // eslint-disable-next-line react-hooks/purity
   const todayStr = etDateString(Math.floor(Date.now() / 1000));
   const thisMonth = todayStr.slice(0, 7);
+  const activeAccount = await getActiveAccount();
 
   const trades = await db
     .select()
     .from(schema.trades)
+    .where(eq(schema.trades.accountId, activeAccount.id))
     .orderBy(desc(schema.trades.entryAt));
 
   // current trading week (Mon-Fri) containing today

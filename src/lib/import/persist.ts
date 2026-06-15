@@ -29,7 +29,7 @@ function dateRange(executions: { executedAt: number }[]): { from: string | null;
   return { from: dates[0], to: dates.at(-1) ?? dates[0] };
 }
 
-export function importTosCsv(csv: string, fileName: string): ImportSummary {
+export function importTosCsv(csv: string, fileName: string, accountId: number): ImportSummary {
   const parsed = parseTosStatement(csv);
   if (parsed.length === 0) {
     throw new Error("No executions found in the Account Trade History section.");
@@ -41,6 +41,7 @@ export function importTosCsv(csv: string, fileName: string): ImportSummary {
       .insert(schema.importBatches)
       .values({
         kind: "executions",
+        accountId,
         source: "tos_csv",
         fileName,
         rowCount: 0,
@@ -58,6 +59,7 @@ export function importTosCsv(csv: string, fileName: string): ImportSummary {
         .values(
           chunk.map((e) => ({
           symbol: e.symbol,
+          accountId,
           side: e.side,
           quantity: e.quantity,
           price: e.price,
@@ -85,6 +87,7 @@ export function importTosCsv(csv: string, fileName: string): ImportSummary {
         .insert(schema.trades)
         .values({
           symbol: t.symbol,
+          accountId,
           side: t.side,
           quantity: t.quantity,
           avgEntryPrice: t.avgEntryPrice,

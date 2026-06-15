@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getActiveAccount } from "@/lib/accountScope";
 import { importTosCsv, type ImportSummary } from "@/lib/import/persist";
 
 export type ImportState =
@@ -18,8 +19,12 @@ export async function importTosAction(
   }
   try {
     const csv = await file.text();
-    const summary = importTosCsv(csv, file.name);
+    const account = await getActiveAccount();
+    const summary = importTosCsv(csv, file.name, account.id);
     revalidatePath("/trades");
+    revalidatePath("/calendar");
+    revalidatePath("/reports");
+    revalidatePath("/journal");
     revalidatePath("/");
     return { ok: true, summary };
   } catch (e) {

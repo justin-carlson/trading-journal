@@ -1,5 +1,6 @@
-import { desc, sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
+import { getActiveAccount } from "@/lib/accountScope";
 import { grossPnl, netPnl } from "@/lib/pnl";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +17,12 @@ function isoDateTime(seconds: number | null): string {
 }
 
 export async function GET() {
-  const trades = await db.select().from(schema.trades).orderBy(desc(schema.trades.entryAt));
+  const activeAccount = await getActiveAccount();
+  const trades = await db
+    .select()
+    .from(schema.trades)
+    .where(eq(schema.trades.accountId, activeAccount.id))
+    .orderBy(desc(schema.trades.entryAt));
   const execCounts = await db
     .select({ tradeId: schema.executions.tradeId, n: sql<number>`count(*)` })
     .from(schema.executions)

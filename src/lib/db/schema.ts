@@ -17,8 +17,17 @@ import {
 } from "drizzle-orm/sqlite-core";
 
 /** Audit trail for each CSV/API import. */
+export const accounts = sqliteTable("accounts", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull().unique(),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+});
+
 export const importBatches = sqliteTable("import_batches", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  accountId: integer("account_id").references(() => accounts.id),
   kind: text("kind", { enum: ["executions", "candles"] }).notNull(),
   // tos_csv | das_csv | manual | massive | alpha_vantage | tradingview_csv | tos_chart_csv
   source: text("source").notNull(),
@@ -32,6 +41,7 @@ export const importBatches = sqliteTable("import_batches", {
 /** A derived round-trip position (one or more executions). */
 export const trades = sqliteTable("trades", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  accountId: integer("account_id").references(() => accounts.id),
   symbol: text("symbol").notNull(),
   side: text("side", { enum: ["long", "short"] }).notNull(),
   quantity: integer("quantity").notNull(),
@@ -68,10 +78,11 @@ export const executions = sqliteTable(
     route: text("route"),
     posEffect: text("pos_effect"), // TO OPEN | TO CLOSE (from TOS) — drives matching
     tradeId: integer("trade_id").references(() => trades.id),
+    accountId: integer("account_id").references(() => accounts.id),
     importBatchId: integer("import_batch_id").references(() => importBatches.id),
     sourceRowHash: text("source_row_hash"),
   },
-  (t) => [uniqueIndex("executions_source_row_hash_unq").on(t.sourceRowHash)],
+  (t) => [uniqueIndex("executions_source_row_hash_account_unq").on(t.sourceRowHash, t.accountId)],
 );
 
 /** Cached OHLCV candles (fetched once on import). */
@@ -120,6 +131,7 @@ export const tradeTags = sqliteTable(
  */
 export const journalEntries = sqliteTable("journal_entries", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  accountId: integer("account_id").references(() => accounts.id),
   tradeId: integer("trade_id").references(() => trades.id),
   scope: text("scope", { enum: ["trade", "day", "week", "month"] })
     .notNull()

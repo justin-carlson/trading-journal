@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { and, gte, inArray, lte } from "drizzle-orm";
+import { and, eq, gte, inArray, lte } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
+import { getActiveAccount } from "@/lib/accountScope";
 import { fmtMoney } from "@/lib/format";
 import { netPnl } from "@/lib/pnl";
 import { etDateString, etDayRange } from "@/lib/time";
@@ -307,7 +308,7 @@ function tradeNoteText(note: typeof schema.journalEntries.$inferSelect): string 
 }
 
 /** Scoped recap notes (day/week/month) keyed by `${scope}:${scopeKey}`. */
-async function loadRecaps(): Promise<Map<string, string>> {
+async function loadRecaps(accountId: number): Promise<Map<string, string>> {
   const rows = await db
     .select({
       scope: schema.journalEntries.scope,
@@ -315,7 +316,7 @@ async function loadRecaps(): Promise<Map<string, string>> {
       lessons: schema.journalEntries.lessons,
     })
     .from(schema.journalEntries)
-    .where(inArray(schema.journalEntries.scope, ["day", "week", "month"]));
+    .where(and(eq(schema.journalEntries.accountId, accountId), inArray(schema.journalEntries.scope, ["day", "week", "month"])));
 
   const map = new Map<string, string>();
   for (const row of rows) {
@@ -324,16 +325,17 @@ async function loadRecaps(): Promise<Map<string, string>> {
   return map;
 }
 
-async function loadJournalTrades(filters: JournalFilters): Promise<JournalTrade[]> {
+async function loadJournalTrades(filters: JournalFilters, accountId: number): Promise<JournalTrade[]> {
   const range = dateRangeFor(filters);
+  const accountWhere = eq(schema.trades.accountId, accountId);
   const where =
     range
       ? (() => {
           const { start } = etDayRange(range.from);
           const { end } = etDayRange(range.to);
-          return and(gte(schema.trades.entryAt, start), lte(schema.trades.entryAt, end));
+          return and(accountWhere, gte(schema.trades.entryAt, start), lte(schema.trades.entryAt, end));
         })()
-      : undefined;
+      : accountWhere;
 
   let rows = await db.select().from(schema.trades).where(where).limit(2000);
 
@@ -348,6 +350,7 @@ async function loadJournalTrades(filters: JournalFilters): Promise<JournalTrade[
   const noteRows = await db
     .select()
     .from(schema.journalEntries)
+    .where(eq(schema.journalEntries.accountId, accountId))
     .orderBy(schema.journalEntries.createdAt);
   const notesByTrade = new Map<number, JournalTrade["notes"]>();
   for (const note of noteRows) {
@@ -369,7 +372,7 @@ async function loadJournalTrades(filters: JournalFilters): Promise<JournalTrade[
     .sort((a, b) => (a.entryAt ?? 0) - (b.entryAt ?? 0));
 }
 
-async function loadJournalArchive(filters: JournalFilters): Promise<JournalArchive> {
+async function loadJournalArchive(filters: JournalFilters, accountId: number): Promise<JournalArchive> {
   const selectedRange = dateRangeFor(filters);
   const selectedDate = selectedRange?.from ?? currentEtDate();
   const selectedMonthKey = selectedDate.slice(0, 7);
@@ -378,6 +381,7 @@ async function loadJournalArchive(filters: JournalFilters): Promise<JournalArchi
   const rows = await db
     .select({ entryAt: schema.trades.entryAt })
     .from(schema.trades)
+    .where(eq(schema.trades.accountId, accountId))
     .limit(10000);
 
   const monthKeys = new Set<string>([selectedMonthKey]);
@@ -882,10 +886,11 @@ export default async function JournalPage({
 }) {
   const filters = parseSearchParams(await searchParams);
   const returnTo = filterHref(filters, {});
+  const activeAccount = await getActiveAccount();
   const [trades, recaps, archive] = await Promise.all([
-    loadJournalTrades(filters),
-    loadRecaps(),
-    loadJournalArchive(filters),
+    loadJournalTrades(filters, activeAccount.id),
+    loadRecaps(activeAccount.id),
+    loadJournalArchive(filters, activeAccount.id),
   ]);
   const months = groupJournal(trades, filters);
   const activePreset = filters.date ? "today" : filters.preset;

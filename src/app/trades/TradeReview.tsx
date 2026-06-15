@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { and, asc, desc, gte, inArray, lte } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, lte } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { netPnl } from "@/lib/pnl";
 import { etDateString, etDayRange } from "@/lib/time";
@@ -251,56 +251,12 @@ function summarizeDays(days: ReviewData[]): ReviewSummary {
   };
 }
 
-function fallbackData(dateOverride?: string): ReviewData {
-  const date = validDate(dateOverride) ?? "2026-06-11";
-  const rows = [
-    { symbol: "PPCB", pnl: 5063, trades: 5 },
-    { symbol: "GELS", pnl: 2814, trades: 4 },
-    { symbol: "EDHL", pnl: 2701, trades: 3 },
-    { symbol: "SMSI", pnl: 806, trades: 2 },
-    { symbol: "CPOP", pnl: 476, trades: 2 },
-    { symbol: "CHAI", pnl: -38, trades: 1 },
-    { symbol: "HKIT", pnl: -153, trades: 2 },
-    { symbol: "NTCL", pnl: -837, trades: 3 },
-    { symbol: "ADIL", pnl: -1016, trades: 4 },
-    { symbol: "BYAH", pnl: -1133, trades: 2 },
-    { symbol: "RUBI", pnl: -1282, trades: 3 },
-  ];
-
-  return {
-    day: {
-      date,
-      label: dayFmt.format(utcDate(date)),
-      displayDate: dateFmt.format(utcDate(date)),
-      trades: 31,
-      fills: 78,
-      wins: 5,
-      losses: 7,
-      grossWins: 11160,
-      grossLosses: 7597,
-      accuracy: 42,
-      profitFactor: 1.47,
-      pnl: 7400.22,
-      journalHref: `/journal?preset=today&from=${date}`,
-    },
-    tickerRows: rows,
-    pnlPoints: [
-      { time: "9:00", value: 0 },
-      { time: "10:00", value: 3000 },
-      { time: "11:00", value: 8500 },
-      { time: "12:00", value: 10300 },
-      { time: "13:00", value: 7400 },
-      { time: "15:00", value: 8000 },
-      { time: "18:30", value: 7400 },
-    ],
-  };
-}
-
-async function latestTradeDate(): Promise<string | undefined> {
+async function latestTradeDate(accountId: number): Promise<string | undefined> {
   const latest = (
     await db
       .select({ entryAt: schema.trades.entryAt })
       .from(schema.trades)
+      .where(eq(schema.trades.accountId, accountId))
       .orderBy(desc(schema.trades.entryAt))
       .limit(1)
   )[0];
@@ -370,13 +326,15 @@ async function loadReviewRange({
   preset,
   date,
   from,
+  accountId,
 }: {
   preset: ReviewPreset;
   date?: string;
   from?: string;
+  accountId: number;
 }): Promise<ReviewRange> {
   const explicitDate = validDate(date);
-  const anchor = explicitDate ?? validDate(from) ?? (await latestTradeDate()) ?? "2026-06-11";
+  const anchor = explicitDate ?? validDate(from) ?? (await latestTradeDate(accountId)) ?? etDateString(Date.now() / 1000);
   const range = rangeForPreset(preset, anchor);
   const { start } = etDayRange(range.from);
   const { end } = etDayRange(range.to);
@@ -384,7 +342,7 @@ async function loadReviewRange({
     await db
       .select()
       .from(schema.trades)
-      .where(and(gte(schema.trades.entryAt, start), lte(schema.trades.entryAt, end)))
+      .where(and(eq(schema.trades.accountId, accountId), gte(schema.trades.entryAt, start), lte(schema.trades.entryAt, end)))
       .orderBy(asc(schema.trades.entryAt))
   ).filter((trade) => {
     if (trade.entryAt == null) return false;
@@ -393,16 +351,25 @@ async function loadReviewRange({
   });
 
   if (trades.length === 0) {
-    const fallback = fallbackData(anchor);
-    const summary = summarizeDays([fallback]);
+    const summary = summarizeDays([]);
     return {
       ...summary,
       preset,
       anchor,
-      title: preset === "month" ? monthFmt.format(utcDate(anchor)) : fallback.day.label,
+      title:
+        preset === "month"
+          ? monthFmt.format(utcDate(range.from))
+          : preset === "week"
+            ? monthWeekLabel(range.from)
+            : dayFmt.format(utcDate(anchor)),
       eyebrow: "Trades Review",
-      displayDate: fallback.day.displayDate,
-      days: [fallback],
+      displayDate:
+        preset === "month"
+          ? monthFmt.format(utcDate(range.from))
+          : preset === "week"
+            ? weekRangeLabel(range.from)
+            : dateFmt.format(utcDate(anchor)),
+      days: [],
       weeks: [],
     };
   }
@@ -473,12 +440,13 @@ async function loadReviewRange({
   };
 }
 
-async function loadReviewArchive(anchor: string): Promise<ReviewArchive> {
+async function loadReviewArchive(anchor: string, accountId: number): Promise<ReviewArchive> {
   const selectedMonthKey = anchor.slice(0, 7);
   const selectedWeekKey = weekStartFor(anchor);
   const rows = await db
     .select({ entryAt: schema.trades.entryAt })
     .from(schema.trades)
+    .where(eq(schema.trades.accountId, accountId))
     .limit(10000);
 
   const monthKeys = new Set<string>([selectedMonthKey]);
@@ -791,21 +759,34 @@ function TradeReviewSidebar({ archive }: { archive: ReviewArchive }) {
   );
 }
 
+function EmptyReviewState() {
+  return (
+    <section className="border-t border-[var(--hairline)] pt-8">
+      <p className="max-w-[460px] text-sm leading-6 text-[var(--body)]">
+        No trades for this account in the selected period yet. Import trades or switch accounts to
+        review activity here.
+      </p>
+    </section>
+  );
+}
+
 export default async function TradeReview({
   preset = "month",
   date,
   from,
   returnTo = "/trades",
   backHref,
+  accountId,
 }: {
   preset?: ReviewPreset;
   date?: string;
   from?: string;
   returnTo?: string;
   backHref?: string;
+  accountId: number;
 }) {
-  const range = await loadReviewRange({ preset, date, from });
-  const archive = await loadReviewArchive(range.anchor);
+  const range = await loadReviewRange({ preset, date, from, accountId });
+  const archive = await loadReviewArchive(range.anchor, accountId);
 
   return (
     <div className="mx-auto w-full max-w-[905px] pb-24">
@@ -823,7 +804,9 @@ export default async function TradeReview({
         <div className="min-w-0 space-y-8">
           <RangeHeader range={range} />
 
-          {preset === "month" ? (
+          {range.trades === 0 ? (
+            <EmptyReviewState />
+          ) : preset === "month" ? (
             <div className="space-y-14">
               {range.weeks.map((week) => (
                 <WeekSection key={week.key} week={week} returnTo={returnTo} />
@@ -841,19 +824,21 @@ export default async function TradeReview({
               ))}
             </div>
           ) : (
-            <DayReviewSection data={range.days[0] ?? fallbackData(range.anchor)} returnTo={returnTo} />
+            <DayReviewSection data={range.days[0]} returnTo={returnTo} />
           )}
 
-          <section className="border-t border-[var(--hairline)] pt-6">
-            <h2 className="font-mono text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
-              AI Review
-            </h2>
-            <p className="mt-4 max-w-[760px] text-sm leading-6 text-[var(--body)]">
-              AI review will summarize what drove the selected period after notes are added. It
-              should interpret the ticker attribution, P&L path, accuracy, and profit factor
-              instead of repeating the same stats shown above.
-            </p>
-          </section>
+          {range.trades > 0 ? (
+            <section className="border-t border-[var(--hairline)] pt-6">
+              <h2 className="font-mono text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
+                AI Review
+              </h2>
+              <p className="mt-4 max-w-[760px] text-sm leading-6 text-[var(--body)]">
+                AI review will summarize what drove the selected period after notes are added. It
+                should interpret the ticker attribution, P&L path, accuracy, and profit factor
+                instead of repeating the same stats shown above.
+              </p>
+            </section>
+          ) : null}
         </div>
       </div>
     </div>

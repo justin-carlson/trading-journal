@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { db, schema } from "@/lib/db";
+import { getActiveAccount } from "@/lib/accountScope";
 import {
   EMOTION_PILLS,
   PRIMARY_TRADE_LABELS,
@@ -27,8 +28,10 @@ export async function addTradeNoteAction(formData: FormData) {
   ) {
     return;
   }
+  const activeAccount = await getActiveAccount();
 
   await db.insert(schema.journalEntries).values({
+    accountId: activeAccount.id,
     tradeId,
     lessons: note || null,
     emotionalState: validPrimaryLabel || null,

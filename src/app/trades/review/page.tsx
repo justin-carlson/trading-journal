@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { and, asc, gte, inArray, lte } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, lte } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
+import { getActiveAccount } from "@/lib/accountScope";
 import { getCandles } from "@/lib/candles";
 import TradeChart from "@/components/TradeChart";
 import ReviewHeader from "@/components/ReviewHeader";
@@ -123,6 +124,7 @@ export default async function TickerDayReviewPage({
   const date = validDate(params.date);
   const symbol = params.symbol?.trim().toUpperCase();
   const backHref = safeReturnTo(params.returnTo, "/trades");
+  const activeAccount = await getActiveAccount();
 
   if (!symbol || !date) {
     return (
@@ -142,7 +144,7 @@ export default async function TickerDayReviewPage({
     await db
       .select()
       .from(schema.trades)
-      .where(and(gte(schema.trades.entryAt, start), lte(schema.trades.entryAt, end)))
+      .where(and(eq(schema.trades.accountId, activeAccount.id), gte(schema.trades.entryAt, start), lte(schema.trades.entryAt, end)))
       .orderBy(asc(schema.trades.entryAt))
   ).filter((trade) => trade.entryAt != null && etDateString(trade.entryAt) === date);
 

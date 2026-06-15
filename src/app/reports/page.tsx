@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { eq } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
+import { getActiveAccount } from "@/lib/accountScope";
 import { fmtMoney } from "@/lib/format";
 import { grossPnl, netPnl } from "@/lib/pnl";
 import { etDateString, etDayRange, MARKET_TZ, timeZoneParts } from "@/lib/time";
@@ -168,8 +169,12 @@ async function loadTagOptions() {
   return db.select({ name: schema.tags.name }).from(schema.tags);
 }
 
-async function loadTrades(filters: ReportFilters): Promise<ReportTrade[]> {
-  let rows = await db.select().from(schema.trades).limit(5000);
+async function loadTrades(filters: ReportFilters, accountId: number): Promise<ReportTrade[]> {
+  let rows = await db
+    .select()
+    .from(schema.trades)
+    .where(eq(schema.trades.accountId, accountId))
+    .limit(5000);
   const range = dateRangeFor(filters);
 
   if (range) {
@@ -446,7 +451,7 @@ function FilterBar({ filters, tagOptions }: { filters: ReportFilters; tagOptions
         </div>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-[1.2fr_1fr_1fr_1fr_auto]">
+      <div className="grid gap-3 md:grid-cols-[1.2fr_1fr_1fr_auto]">
         <label className="space-y-1">
           <span className="block text-sm font-semibold text-[var(--muted)]">Symbol</span>
           <input name="symbol" defaultValue={filters.symbol ?? ""} placeholder="Symbol" className="h-10 w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-sm outline-none focus:border-[#58a6ff]" />
@@ -464,15 +469,6 @@ function FilterBar({ filters, tagOptions }: { filters: ReportFilters; tagOptions
             <option value="">All sides</option>
             <option value="long">Long</option>
             <option value="short">Short</option>
-          </select>
-        </label>
-        <label className="space-y-1">
-          <span className="block text-sm font-semibold text-[var(--muted)]">Account</span>
-          <select name="account" defaultValue={filters.account ?? ""} className="h-10 w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-sm outline-none focus:border-[#58a6ff]">
-            <option value="">All accounts</option>
-            <option value="paper">Paper trading</option>
-            <option value="tos">Thinkorswim</option>
-            <option value="broker-2">Broker account 2</option>
           </select>
         </label>
         <div className="flex items-end">
@@ -734,7 +730,8 @@ export default async function ReportsPage({
   }>;
 }) {
   const filters = parseSearchParams(await searchParams);
-  const [trades, tagOptions] = await Promise.all([loadTrades(filters), loadTagOptions()]);
+  const activeAccount = await getActiveAccount();
+  const [trades, tagOptions] = await Promise.all([loadTrades(filters, activeAccount.id), loadTagOptions()]);
   const statSections = buildStats(trades);
   const dayBuckets = buildDayBuckets(trades);
   const hourBuckets = buildHourBuckets(trades);

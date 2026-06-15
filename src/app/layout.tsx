@@ -17,17 +17,21 @@ import AccountSelector from "@/components/AccountSelector";
 import ImportForm from "@/components/ImportForm";
 import NavLinks from "@/components/NavLinks";
 import SettingsLink from "@/components/SettingsLink";
+import { getActiveAccount, listAccounts } from "@/lib/accountScope";
 
 export const metadata: Metadata = {
   title: "Trading Journal",
   description: "Personal, local-first trading journal",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const accounts = await listAccounts();
+  const activeAccount = await getActiveAccount(accounts);
+
   return (
     <html
       lang="en"
@@ -48,7 +52,7 @@ export default function RootLayout({
           </Link>
           <NavLinks />
           <div className="ml-auto flex items-start gap-3">
-            <AccountSelector />
+            <AccountSelector accounts={accounts} activeAccountId={activeAccount.id} />
             <ImportForm />
             <SettingsLink />
           </div>

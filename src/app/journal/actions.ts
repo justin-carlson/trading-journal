@@ -2,6 +2,7 @@
 
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { getActiveAccount } from "@/lib/accountScope";
 import { db, schema } from "@/lib/db";
 import {
   EMOTION_PILLS,
@@ -26,6 +27,7 @@ export async function upsertScopedNoteAction(
   const body = String(formData.get("body") ?? "").trim();
 
   if (!RECAP_SCOPES.includes(scope) || !scopeKey) return { ok: false };
+  const activeAccount = await getActiveAccount();
 
   const existing = await db
     .select({ id: schema.journalEntries.id })
@@ -34,6 +36,7 @@ export async function upsertScopedNoteAction(
       and(
         eq(schema.journalEntries.scope, scope),
         eq(schema.journalEntries.scopeKey, scopeKey),
+        eq(schema.journalEntries.accountId, activeAccount.id),
       ),
     )
     .limit(1);
@@ -46,7 +49,7 @@ export async function upsertScopedNoteAction(
   } else {
     await db
       .insert(schema.journalEntries)
-      .values({ scope, scopeKey, lessons: body || null });
+      .values({ accountId: activeAccount.id, scope, scopeKey, lessons: body || null });
   }
 
   revalidatePath("/journal");

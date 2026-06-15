@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { eq } from "drizzle-orm";
 import { Fragment } from "react";
 import { db, schema } from "@/lib/db";
+import { getActiveAccount } from "@/lib/accountScope";
 import { netPnl } from "@/lib/pnl";
 import { etDateString } from "@/lib/time";
 import { fmtMoney } from "@/lib/format";
@@ -133,7 +135,7 @@ function workweeksForMonth(year: number, month: number, byDate: Map<string, DayA
   return weeks;
 }
 
-async function dailyAgg(): Promise<{ byDate: Map<string, DayAgg>; periods: Set<string> }> {
+async function dailyAgg(accountId: number): Promise<{ byDate: Map<string, DayAgg>; periods: Set<string> }> {
   const trades = await db
     .select({
       side: schema.trades.side,
@@ -143,7 +145,8 @@ async function dailyAgg(): Promise<{ byDate: Map<string, DayAgg>; periods: Set<s
       fees: schema.trades.fees,
       entryAt: schema.trades.entryAt,
     })
-    .from(schema.trades);
+    .from(schema.trades)
+    .where(eq(schema.trades.accountId, accountId));
 
   const byDate = new Map<string, DayAgg>();
   const periods = new Set<string>();
@@ -436,7 +439,8 @@ export default async function CalendarPage({
   const { m, y, view, range } = rawParams;
   const from = validDate(rawParams.from);
   const to = validDate(rawParams.to);
-  const { byDate, periods } = await dailyAgg();
+  const activeAccount = await getActiveAccount();
+  const { byDate, periods } = await dailyAgg(activeAccount.id);
   const params: CalendarSearch = {
     m,
     y,

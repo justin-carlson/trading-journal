@@ -1,100 +1,59 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ACCOUNT_STORAGE_EVENT, ACCOUNTS_STORAGE_KEY, ACTIVE_ACCOUNT_STORAGE_KEY, DEFAULT_ACCOUNTS } from "@/lib/accounts";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { addAccountAction, deleteAccountAction, renameAccountAction } from "@/app/accounts/actions";
+import type { AccountOption } from "@/lib/accountScope";
 
-function cleanAccounts(accounts: string[]): string[] {
-  const unique = new Set<string>();
-  for (const account of accounts) {
-    const name = account.trim();
-    if (name) unique.add(name);
-  }
-  return [...unique];
-}
-
-export default function AccountSettings() {
-  const [accounts, setAccounts] = useState(DEFAULT_ACCOUNTS);
-  const [activeAccount, setActiveAccount] = useState(DEFAULT_ACCOUNTS[0]);
+export default function AccountSettings({
+  accounts,
+}: {
+  accounts: AccountOption[];
+}) {
+  const router = useRouter();
   const [newAccountName, setNewAccountName] = useState("");
-  const [editingAccount, setEditingAccount] = useState<string | null>(null);
+  const [editingAccount, setEditingAccount] = useState<number | null>(null);
   const [editingName, setEditingName] = useState("");
-
-  useEffect(() => {
-    const savedAccounts = localStorage.getItem(ACCOUNTS_STORAGE_KEY);
-    let parsedAccounts: unknown = DEFAULT_ACCOUNTS;
-    try {
-      parsedAccounts = savedAccounts ? JSON.parse(savedAccounts) : DEFAULT_ACCOUNTS;
-    } catch {
-      parsedAccounts = DEFAULT_ACCOUNTS;
-    }
-    const nextAccounts = Array.isArray(parsedAccounts) ? cleanAccounts(parsedAccounts) : DEFAULT_ACCOUNTS;
-    const savedActiveAccount = localStorage.getItem(ACTIVE_ACCOUNT_STORAGE_KEY);
-
-    setAccounts(nextAccounts.length > 0 ? nextAccounts : DEFAULT_ACCOUNTS);
-    setActiveAccount(savedActiveAccount && nextAccounts.includes(savedActiveAccount) ? savedActiveAccount : nextAccounts[0] ?? DEFAULT_ACCOUNTS[0]);
-  }, []);
-
-  function saveAccounts(nextAccounts: string[], nextActiveAccount = activeAccount) {
-    const cleanNextAccounts = cleanAccounts(nextAccounts);
-    const fallbackAccounts = cleanNextAccounts.length > 0 ? cleanNextAccounts : DEFAULT_ACCOUNTS;
-    const cleanActiveAccount = fallbackAccounts.includes(nextActiveAccount) ? nextActiveAccount : fallbackAccounts[0];
-
-    setAccounts(fallbackAccounts);
-    setActiveAccount(cleanActiveAccount);
-    localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(fallbackAccounts));
-    localStorage.setItem(ACTIVE_ACCOUNT_STORAGE_KEY, cleanActiveAccount);
-    window.dispatchEvent(new Event(ACCOUNT_STORAGE_EVENT));
-  }
-
-  function addAccount() {
-    const name = newAccountName.trim();
-    if (!name) return;
-    saveAccounts([...accounts, name], name);
-    setNewAccountName("");
-  }
-
-  function renameAccount(oldName: string, nextName: string) {
-    const cleanName = nextName.trim();
-    if (!cleanName) return;
-    const nextAccounts = accounts.map((account) => (account === oldName ? cleanName : account));
-    saveAccounts(nextAccounts, activeAccount === oldName ? cleanName : activeAccount);
-    setEditingAccount(null);
-    setEditingName("");
-  }
-
-  function deleteAccount(name: string) {
-    saveAccounts(accounts.filter((account) => account !== name));
-  }
 
   return (
     <div className="space-y-4">
       <div className="grid gap-2">
         {accounts.map((account) => (
-          <div key={account} className="grid gap-2 border-b border-[var(--border)] py-3 md:grid-cols-[1fr_auto] md:items-center">
-            {editingAccount === account ? (
+          <div key={account.id} className="grid gap-2 border-b border-[var(--border)] py-3 md:grid-cols-[1fr_auto] md:items-center">
+            {editingAccount === account.id ? (
               <input
                 value={editingName}
                 onChange={(event) => setEditingName(event.target.value)}
                 className="h-10 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--blue)]"
-                aria-label={`Rename ${account}`}
+                aria-label={`Rename ${account.name}`}
                 autoFocus
               />
             ) : (
               <div className="flex h-10 items-center text-sm font-semibold text-[var(--foreground)]">
-                {account}
+                {account.name}
               </div>
             )}
 
             <div className="flex flex-wrap gap-2">
-              {editingAccount === account ? (
+              {editingAccount === account.id ? (
                 <>
-                  <button
-                    type="button"
-                    onClick={() => renameAccount(account, editingName)}
-                    className="h-10 rounded-md bg-[var(--blue)] px-3 text-sm font-semibold text-black"
+                  <form
+                    action={async (formData) => {
+                      await renameAccountAction(formData);
+                      setEditingAccount(null);
+                      setEditingName("");
+                      router.refresh();
+                    }}
                   >
-                    Save
-                  </button>
+                    <input type="hidden" name="accountId" value={account.id} />
+                    <input type="hidden" name="name" value={editingName} />
+                    <button
+                      type="submit"
+                      className="h-10 rounded-md bg-[var(--blue)] px-3 text-sm font-semibold text-black"
+                    >
+                      Save
+                    </button>
+                  </form>
                   <button
                     type="button"
                     onClick={() => {
@@ -110,8 +69,8 @@ export default function AccountSettings() {
                 <button
                   type="button"
                   onClick={() => {
-                    setEditingAccount(account);
-                    setEditingName(account);
+                    setEditingAccount(account.id);
+                    setEditingName(account.name);
                   }}
                   className="h-10 rounded-md border border-[var(--border)] px-3 text-sm font-semibold text-[var(--muted)] transition-colors hover:border-[var(--blue)] hover:text-[var(--foreground)]"
                 >
@@ -119,33 +78,48 @@ export default function AccountSettings() {
                 </button>
               )}
 
-              <button
-                type="button"
-                onClick={() => deleteAccount(account)}
-                className="h-10 rounded-md border border-[var(--border)] px-3 text-sm font-semibold text-[var(--muted)] transition-colors hover:border-[var(--red)] hover:text-[var(--foreground)]"
+              <form
+                action={async (formData) => {
+                  await deleteAccountAction(formData);
+                  router.refresh();
+                }}
               >
-                Delete
-              </button>
+                <input type="hidden" name="accountId" value={account.id} />
+                <button
+                  type="submit"
+                  disabled={accounts.length <= 1}
+                  className="h-10 rounded-md border border-[var(--border)] px-3 text-sm font-semibold text-[var(--muted)] transition-colors hover:border-[var(--red)] hover:text-[var(--foreground)] disabled:opacity-40"
+                >
+                  Delete
+                </button>
+              </form>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <form
+        action={async (formData) => {
+          await addAccountAction(formData);
+          setNewAccountName("");
+          router.refresh();
+        }}
+        className="flex flex-wrap gap-2"
+      >
         <input
+          name="name"
           value={newAccountName}
           onChange={(event) => setNewAccountName(event.target.value)}
           placeholder="New account name"
           className="h-10 min-w-64 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--blue)]"
         />
         <button
-          type="button"
-          onClick={addAccount}
+          type="submit"
           className="h-10 rounded-md bg-[var(--blue)] px-4 text-sm font-semibold text-black"
         >
           Add account
         </button>
-      </div>
+      </form>
     </div>
   );
 }

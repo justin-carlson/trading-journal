@@ -1,7 +1,10 @@
 import AccountSettings from "@/components/AccountSettings";
 import ThemeSettings from "@/components/ThemeSettings";
+import { listAccounts } from "@/lib/accountScope";
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const accounts = await listAccounts();
+
   return (
     <div className="mx-auto max-w-3xl space-y-12">
       <section className="space-y-2">
@@ -15,10 +18,10 @@ export default function SettingsPage() {
         <div>
           <h2 className="text-base font-semibold">Accounts</h2>
           <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
-            Manage the account names used by the header switcher. Full account-scoped imports and reports are next.
+            Manage account names used by the header switcher. Imports, journals, reports, and trade views use the selected account.
           </p>
         </div>
-        <AccountSettings />
+        <AccountSettings accounts={accounts} />
       </section>
 
       <section className="space-y-4 border-t border-[var(--border)] pt-6">
