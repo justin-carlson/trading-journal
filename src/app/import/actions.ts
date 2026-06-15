@@ -20,7 +20,7 @@ export async function importTosAction(
   try {
     const csv = await file.text();
     const account = await getActiveAccount();
-    const summary = importTosCsv(csv, file.name, account.id);
+    const summary = await importTosCsv(csv, file.name, account.id);
     revalidatePath("/trades");
     revalidatePath("/calendar");
     revalidatePath("/reports");

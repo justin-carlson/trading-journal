@@ -29,15 +29,15 @@ function dateRange(executions: { executedAt: number }[]): { from: string | null;
   return { from: dates[0], to: dates.at(-1) ?? dates[0] };
 }
 
-export function importTosCsv(csv: string, fileName: string, accountId: number): ImportSummary {
+export async function importTosCsv(csv: string, fileName: string, accountId: number): Promise<ImportSummary> {
   const parsed = parseTosStatement(csv);
   if (parsed.length === 0) {
     throw new Error("No executions found in the Account Trade History section.");
   }
   const parsedRange = dateRange(parsed);
 
-  return db.transaction((tx) => {
-    const batch = tx
+  return db.transaction(async (tx) => {
+    const batch = await tx
       .insert(schema.importBatches)
       .values({
         kind: "executions",
@@ -54,7 +54,7 @@ export function importTosCsv(csv: string, fileName: string, accountId: number): 
     const insertedRows: { id: number; hash: string | null }[] = [];
     for (let i = 0; i < parsed.length; i += INSERT_CHUNK_SIZE) {
       const chunk = parsed.slice(i, i + INSERT_CHUNK_SIZE);
-      const rows = tx
+      const rows = await tx
         .insert(schema.executions)
         .values(
           chunk.map((e) => ({
@@ -83,7 +83,7 @@ export function importTosCsv(csv: string, fileName: string, accountId: number): 
     // Match only the newly-inserted fills into trades.
     const matched = matchTrades(newExecutions);
     for (const t of matched) {
-      const trade = tx
+      const trade = await tx
         .insert(schema.trades)
         .values({
           symbol: t.symbol,
@@ -104,7 +104,7 @@ export function importTosCsv(csv: string, fileName: string, accountId: number): 
         .map((h) => idByHash.get(h))
         .filter((id): id is number => id != null);
       if (execIds.length > 0) {
-        tx
+        await tx
           .update(schema.executions)
           .set({ tradeId: trade.id })
           .where(inArray(schema.executions.id, execIds))
@@ -112,7 +112,7 @@ export function importTosCsv(csv: string, fileName: string, accountId: number): 
       }
     }
 
-    tx
+    await tx
       .update(schema.importBatches)
       .set({ rowCount: insertedRows.length })
       .where(inArray(schema.importBatches.id, [batch.id]))

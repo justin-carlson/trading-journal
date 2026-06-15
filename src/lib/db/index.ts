@@ -1,20 +1,27 @@
-/**
- * Local-first SQLite client (better-sqlite3 + Drizzle).
- *
- * The DB file lives at `data/journal.db` (gitignored). Override with DB_PATH.
- */
 import { mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
+import { pathToFileURL } from "node:url";
+import { createClient } from "@libsql/client";
+import { drizzle } from "drizzle-orm/libsql";
 import * as schema from "./schema";
 
-const dbPath = resolve(process.env.DB_PATH ?? "data/journal.db");
-mkdirSync(dirname(dbPath), { recursive: true });
+function databaseUrl() {
+  if (process.env.TURSO_DATABASE_URL) {
+    if (!process.env.TURSO_AUTH_TOKEN) {
+      throw new Error("TURSO_AUTH_TOKEN is required when TURSO_DATABASE_URL is set.");
+    }
+    return process.env.TURSO_DATABASE_URL;
+  }
 
-const sqlite = new Database(dbPath);
-sqlite.pragma("journal_mode = WAL");
-sqlite.pragma("foreign_keys = ON");
+  const dbPath = resolve(process.env.DB_PATH ?? "data/journal.db");
+  mkdirSync(dirname(dbPath), { recursive: true });
+  return pathToFileURL(dbPath).href;
+}
 
-export const db = drizzle(sqlite, { schema });
+const client = createClient({
+  url: databaseUrl(),
+  authToken: process.env.TURSO_DATABASE_URL ? process.env.TURSO_AUTH_TOKEN : undefined,
+});
+
+export const db = drizzle(client, { schema });
 export { schema };

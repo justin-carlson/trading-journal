@@ -140,41 +140,48 @@ trade history, symbols, timestamps, and other private information.
 
 ## Demo Data
 
-The open-source version should include a fake/demo dataset so contributors can
-try the app immediately after setup.
-
-Recommended demo-data direction:
-
-- Add anonymized or synthetic ThinkorSwim-style CSV exports under `samples/`.
-- Include a small seed script that imports the demo CSV into `data/journal.db`.
-- Use fake symbols or paper-trading exports only.
-- Keep the dataset small enough to be understandable, but rich enough to show:
-  dashboard, calendar, reports, trade detail charts, and journal notes.
-
-Proposed future command:
+Generate a synthetic demo database:
 
 ```bash
-npm run seed:demo
+npm run demo:db -- data/tradingjournaldemo.db
 ```
 
-Until that script exists, use the app's **Import** button with a ThinkorSwim
-Account Statement CSV.
+The demo database uses fake trading activity and journal notes. It is intended
+for screenshots, hosted demos, and contributor onboarding; do not commit real
+broker exports or a personal `data/journal.db`.
 
 ## Hosting A Demo
 
-A public hosted demo is a good idea, but it should use demo data only.
+The app can run locally from SQLite or in production against Turso/libSQL.
+For a hosted demo:
 
-Recommended approach:
+```bash
+# 1. Generate demo data
+npm run demo:db -- data/tradingjournaldemo.db
 
-- Deploy the Next.js app with a separate demo database.
-- Do not expose personal `data/journal.db`.
-- Use a read-only or resettable demo dataset.
-- Keep `MASSIVE_API_KEY` server-side only.
-- Do not let public users upload private broker exports unless there is a clear
-  privacy model.
+# 2. Upload it to Turso
+turso db create trading-journal-demo --from-file data/tradingjournaldemo.db --wait
+turso db show trading-journal-demo
+turso db tokens create trading-journal-demo
 
-For an open-source demo, the safest first version is a static/demo deployment
-with fake data that resets regularly.
+# 3. Link and configure Vercel
+vercel link --project trading-journal
+vercel env add TURSO_DATABASE_URL production
+vercel env add TURSO_AUTH_TOKEN production
+
+# 4. Deploy
+vercel --prod
+```
+
+Required hosted environment variables:
+
+```bash
+TURSO_DATABASE_URL=libsql://your-database.turso.io
+TURSO_AUTH_TOKEN=your_turso_token_here
+```
+
+Keep `MASSIVE_API_KEY` server-side only. Do not let public users upload private
+broker exports unless there is a clear privacy model.
 
 ## Candle Data
 

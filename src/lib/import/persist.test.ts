@@ -33,14 +33,14 @@ describe.runIf(hasSample())("importTosCsv (integration)", () => {
     mod = await import("./persist");
   });
 
-  it("inserts executions + trades, then is idempotent on re-import", () => {
-    const first = mod.importTosCsv(csv, "sample.csv", 1);
+  it("inserts executions + trades, then is idempotent on re-import", async () => {
+    const first = await mod.importTosCsv(csv, "sample.csv", 1);
     expect(first.parsed).toBe(91);
     expect(first.inserted).toBe(91);
     expect(first.duplicates).toBe(0);
     expect(first.trades).toBe(31);
 
-    const second = mod.importTosCsv(csv, "sample.csv", 1);
+    const second = await mod.importTosCsv(csv, "sample.csv", 1);
     expect(second.inserted).toBe(0);
     expect(second.duplicates).toBe(91);
     expect(second.trades).toBe(0);
