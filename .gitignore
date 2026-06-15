@@ -9,6 +9,8 @@ build/
 # Local data (private — never commit)
 data/journal.db
 data/journal.db-*
+data/*.db
+data/*.db-*
 data/uploads/
 # real broker exports used as parser fixtures
 data/samples/

@@ -136,6 +136,21 @@ Emotion pills:
 The pills should support multiple selections. They are secondary metadata, not
 the main note title.
 
+## Future Tag Taxonomy
+
+Tags should eventually separate into three related but distinct groups:
+
+- Trade classification: the main review label, such as Good trade, Best setup,
+  Needs review, Rule break, Revenge trade, or Bad trade.
+- Trade setup: the technical setup or strategy context, such as VWAP reclaim,
+  opening range breakout, news momentum, continuation, pullback, or scalp.
+- Emotion/process: the execution state, such as Calm, Frustrated, FOMO,
+  Patient, Followed plan, Chased, Oversized, or Moved stop.
+
+Custom tags should be managed separately from the current visual cleanup work.
+They will affect trade notes, journal editing, trade log filtering, reports, and
+future AI review, so this should be handled as a focused Part 2 feature.
+
 ## Trade Note UI
 
 Trade detail page:

@@ -89,9 +89,14 @@
 
 ## 8. Cross-cutting / system
 - ✅ Local-first **SQLite**; data stays on disk (`data/journal.db`).
-- ✅ Dark UI; left nav (Dashboard / Trades / Calendar / Reports / Import).
+- ✅ Dark UI; top nav (Calendar / Trades / Journal / Reports / Account / Import / Settings).
 - ✅ Global filter bar (symbol / tags / side / duration / date) shared across views.
-- 🔜 Settings (default gross/net, timezone, fees handling, backup/export DB).
+- 🔜 Account switching for paper/live/IRA accounts, with imports, reports,
+  calendar, trades, and journal scoped to the active account.
+- 🔜 Settings (theme, accounts, default gross/net, timezone, fees handling,
+  backup/export DB).
+- 🔜 Tag management split into trade classification, trade setup, and
+  emotion/process tags.
 - 🔜 Backup/restore (copy the SQLite file; export/import).
 - ⛔ Auth / login / multi-user / RLS; community / "people"; billing.
 

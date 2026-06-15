@@ -13,9 +13,10 @@ const geistMono = Geist_Mono({
 });
 
 import Link from "next/link";
+import AccountSelector from "@/components/AccountSelector";
 import ImportForm from "@/components/ImportForm";
 import NavLinks from "@/components/NavLinks";
-import ThemeToggle from "@/components/ThemeToggle";
+import SettingsLink from "@/components/SettingsLink";
 
 export const metadata: Metadata = {
   title: "Trading Journal",
@@ -47,8 +48,9 @@ export default function RootLayout({
           </Link>
           <NavLinks />
           <div className="ml-auto flex items-start gap-3">
-            <ThemeToggle />
+            <AccountSelector />
             <ImportForm />
+            <SettingsLink />
           </div>
         </header>
         <main className="flex-1 px-5 py-6">{children}</main>
