@@ -1,8 +1,9 @@
-import ThemeToggle from "@/components/ThemeToggle";
+import AccountSettings from "@/components/AccountSettings";
+import ThemeSettings from "@/components/ThemeSettings";
 
 export default function SettingsPage() {
   return (
-    <div className="mx-auto max-w-3xl space-y-10">
+    <div className="mx-auto max-w-3xl space-y-12">
       <section className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
         <p className="max-w-xl text-sm leading-6 text-[var(--muted)]">
@@ -12,25 +13,45 @@ export default function SettingsPage() {
 
       <section className="space-y-4 border-t border-[var(--border)] pt-6">
         <div>
+          <h2 className="text-base font-semibold">Accounts</h2>
+          <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
+            Manage the account names used by the header switcher. Full account-scoped imports and reports are next.
+          </p>
+        </div>
+        <AccountSettings />
+      </section>
+
+      <section className="space-y-4 border-t border-[var(--border)] pt-6">
+        <div>
           <h2 className="text-base font-semibold">Theme</h2>
           <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
             Switch between the current dark and light themes.
           </p>
         </div>
-        <ThemeToggle />
+        <ThemeSettings />
       </section>
 
-      <section className="space-y-3 border-t border-[var(--border)] pt-6">
+      <section className="space-y-4 border-t border-[var(--border)] pt-6">
         <div>
-          <h2 className="text-base font-semibold">Accounts</h2>
-          <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
-            Account management will live here once account-scoped imports and reports are wired in.
+          <h2 className="text-base font-semibold">Data</h2>
+          <p className="mt-1 max-w-xl text-sm leading-6 text-[var(--muted)]">
+            Export your trade history for spreadsheets, backups, or testing another trading journal.
           </p>
         </div>
-        <div className="grid gap-2 text-sm text-[var(--muted)]">
-          <span>Live Account</span>
-          <span>Paper Trading</span>
-          <span>Roth IRA</span>
+        <div className="flex flex-wrap gap-3">
+          <a
+            href="/api/export/trades"
+            className="inline-flex h-10 items-center rounded-md bg-[var(--blue)] px-4 text-sm font-semibold text-black"
+          >
+            Export trades CSV
+          </a>
+          <button
+            type="button"
+            disabled
+            className="inline-flex h-10 items-center rounded-md border border-[var(--border)] px-4 text-sm font-semibold text-[var(--muted)] opacity-60"
+          >
+            Export database backup
+          </button>
         </div>
       </section>
     </div>
