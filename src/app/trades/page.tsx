@@ -6,12 +6,14 @@ import { grossPnl, netPnl } from "@/lib/pnl";
 import { etDateString, etDayRange } from "@/lib/time";
 import MonthPicker from "@/components/MonthPicker";
 import { RowLink } from "./RowLink";
+import TradeReview, { type ReviewPreset } from "./TradeReview";
 
 export const dynamic = "force-dynamic";
 
 type TradeSort = "date" | "symbol" | "side" | "shares" | "execs" | "entry" | "exit" | "perShare" | "pnl";
 type SortDir = "asc" | "desc";
 type DatePreset = "all" | "today" | "week" | "month" | "custom";
+type TradeView = "review" | "log";
 
 type TradeFilters = {
   date?: string;
@@ -26,6 +28,7 @@ type TradeFilters = {
   dir: SortDir;
   page: number;
   perPage: number;
+  view: TradeView;
 };
 
 const PAGE_SIZE_OPTIONS = [50, 100, 200, 500] as const;
@@ -44,6 +47,7 @@ function parseSearchParams(params: {
   dir?: string;
   page?: string;
   perPage?: string;
+  view?: string;
 }): TradeFilters {
   const sortOptions = new Set<TradeSort>(["date", "symbol", "side", "shares", "execs", "entry", "exit", "perShare", "pnl"]);
   const presetOptions = new Set<DatePreset>(["all", "today", "week", "month", "custom"]);
@@ -54,6 +58,7 @@ function parseSearchParams(params: {
   const preset = presetOptions.has(params.preset as DatePreset) ? (params.preset as DatePreset) : "month";
   const page = Number.parseInt(params.page ?? "1", 10);
   const perPage = Number.parseInt(params.perPage ?? String(DEFAULT_PAGE_SIZE), 10);
+  const view = params.view === "log" ? "log" : "review";
   const validDate = (value: string | undefined) => value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : undefined;
   return {
     date: validDate(params.date),
@@ -68,6 +73,7 @@ function parseSearchParams(params: {
     dir,
     page: Number.isFinite(page) && page > 0 ? page : 1,
     perPage: pageSizeOptions.has(perPage) ? perPage : DEFAULT_PAGE_SIZE,
+    view,
   };
 }
 
@@ -248,6 +254,7 @@ function filterHref(filters: TradeFilters, updates: Partial<TradeFilters>) {
   if (next.side) params.set("side", next.side);
   if (next.tag) params.set("tag", next.tag);
   if (next.account) params.set("account", next.account);
+  if (next.view !== "review") params.set("view", next.view);
   if (next.page > 1) params.set("page", String(next.page));
   if (next.perPage !== DEFAULT_PAGE_SIZE) params.set("perPage", String(next.perPage));
   params.set("sort", next.sort);
@@ -317,6 +324,63 @@ function SortHeader({
   );
 }
 
+function ViewToggle({ filters }: { filters: TradeFilters }) {
+  const buttonClass = (view: TradeView) =>
+    `flex h-8 min-w-20 items-center justify-center gap-2 rounded px-3 text-sm font-semibold transition-colors ${
+      filters.view === view
+        ? "bg-[var(--surface-2)] text-[var(--foreground)]"
+        : "text-[var(--muted)] hover:text-[var(--foreground)]"
+    }`;
+
+  return (
+    <nav aria-label="Trade view" className="inline-flex h-10 items-center rounded-md border border-[var(--border)] p-1">
+      <Link href={filterHref(filters, { view: "review", page: 1 })} className={buttonClass("review")}>
+        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.4">
+          <rect x="4" y="3.5" width="16" height="17" rx="3" />
+          <path d="M8 8h8M8 12h8M8 16h6" strokeLinecap="round" />
+        </svg>
+        Review
+      </Link>
+      <Link href={filterHref(filters, { view: "log", page: 1 })} className={buttonClass("log")}>
+        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.4">
+          <path d="M5 7h14M5 12h14M5 17h14" strokeLinecap="round" />
+        </svg>
+        Log
+      </Link>
+    </nav>
+  );
+}
+
+function ReviewRangeToggle({ filters }: { filters: TradeFilters }) {
+  const reviewPreset: ReviewPreset =
+    filters.date || filters.preset === "today"
+      ? "today"
+      : filters.preset === "week"
+        ? "week"
+        : "month";
+  const presetBase = { date: undefined, from: undefined, to: undefined, view: "review" as const, page: 1 };
+  const buttonClass = (preset: ReviewPreset) =>
+    `flex h-8 min-w-20 items-center justify-center rounded px-3 text-sm font-semibold transition-colors ${
+      reviewPreset === preset
+        ? "bg-[var(--surface-2)] text-[var(--foreground)]"
+        : "text-[var(--muted)] hover:text-[var(--foreground)]"
+    }`;
+
+  return (
+    <nav aria-label="Trade review range" className="inline-flex h-10 items-center rounded-md border border-[var(--border)] p-1">
+      <Link href={filterHref(filters, { ...presetBase, preset: "today" })} className={buttonClass("today")}>
+        Today
+      </Link>
+      <Link href={filterHref(filters, { ...presetBase, preset: "week" })} className={buttonClass("week")}>
+        This week
+      </Link>
+      <Link href={filterHref(filters, { ...presetBase, preset: "month" })} className={buttonClass("month")}>
+        This month
+      </Link>
+    </nav>
+  );
+}
+
 export default async function TradesPage({
   searchParams,
 }: {
@@ -333,9 +397,34 @@ export default async function TradesPage({
     dir?: string;
     page?: string;
     perPage?: string;
+    view?: string;
   }>;
 }) {
   const filters = parseSearchParams(await searchParams);
+  if (filters.view === "review") {
+    const reviewPreset: ReviewPreset =
+      filters.date || filters.preset === "today"
+        ? "today"
+        : filters.preset === "week"
+          ? "week"
+          : "month";
+    const reviewDate = reviewPreset === "today" ? filters.date ?? dateRangeFor(filters)?.from : undefined;
+    const reviewHref = filterHref(filters, { view: "review", page: 1 });
+
+    return (
+      <div className="space-y-7">
+        <div className="mx-auto grid w-full max-w-[905px] gap-8 md:grid-cols-[180px_minmax(0,665px)] xl:grid-cols-[200px_minmax(0,665px)] xl:gap-10">
+          <div className="hidden md:block" />
+          <div className="flex min-w-0 flex-col items-start gap-3">
+            <ViewToggle filters={filters} />
+            <ReviewRangeToggle filters={filters} />
+          </div>
+        </div>
+        <TradeReview preset={reviewPreset} date={reviewDate} from={filters.from} returnTo={reviewHref} />
+      </div>
+    );
+  }
+
   const { trades, total, page, totalPages } = await loadTrades(filters);
   const tagOptions = await loadTagOptions();
   const date = filters.date;
@@ -355,8 +444,11 @@ export default async function TradesPage({
   const selectedDate = dateRangeFor(filters)?.from ?? currentEtDate();
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto w-full max-w-6xl space-y-6">
+      <ViewToggle filters={pageFilters} />
+
       <form action="/trades" className="space-y-4">
+        <input type="hidden" name="view" value="log" />
         <input type="hidden" name="sort" value={filters.sort} />
         <input type="hidden" name="dir" value={filters.dir} />
         <input type="hidden" name="page" value="1" />
@@ -381,7 +473,7 @@ export default async function TradesPage({
             <div className="flex flex-wrap gap-2">
               <MonthPicker selectedDate={selectedDate} />
               <Link
-                href="/trades"
+                href="/trades?view=log"
                 className="flex h-10 items-center rounded-md border border-[var(--border)] px-3 text-sm text-[var(--muted)] hover:border-[#58a6ff]"
               >
                 Clear
@@ -581,6 +673,7 @@ export default async function TradesPage({
             <input type="hidden" name="sort" value={filters.sort} />
             <input type="hidden" name="dir" value={filters.dir} />
             <input type="hidden" name="page" value="1" />
+            <input type="hidden" name="view" value="log" />
             {filters.date && <input type="hidden" name="date" value={filters.date} />}
             {filters.preset !== "all" && <input type="hidden" name="preset" value={filters.preset} />}
             {filters.from && <input type="hidden" name="from" value={filters.from} />}

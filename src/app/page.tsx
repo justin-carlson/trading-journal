@@ -136,7 +136,7 @@ export default async function Home() {
   ];
 
   return (
-    <div className="max-w-4xl space-y-10">
+    <div className="mx-auto w-full max-w-6xl space-y-10">
       {trades.length === 0 ? (
         <p className="text-sm text-[var(--muted)]">
           No trades yet — import a statement to get started.

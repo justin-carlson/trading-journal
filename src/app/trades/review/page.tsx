@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { and, asc, eq, gte, inArray, lte } from "drizzle-orm";
+import { and, asc, gte, inArray, lte } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { getCandles } from "@/lib/candles";
 import TradeChart from "@/components/TradeChart";
-import RecapNote from "@/components/RecapNote";
+import ReviewHeader from "@/components/ReviewHeader";
+import TickerReviewRail from "@/components/TickerReviewRail";
 import { fmtDate, fmtMoney, fmtPrice } from "@/lib/format";
 import { netPnl } from "@/lib/pnl";
 import { etDayRange, etDateString } from "@/lib/time";
@@ -137,19 +138,15 @@ export default async function TickerDayReviewPage({
   }
 
   const { start, end } = etDayRange(date);
-  let trades = await db
-    .select()
-    .from(schema.trades)
-    .where(
-      and(
-        eq(schema.trades.symbol, symbol),
-        gte(schema.trades.entryAt, start),
-        lte(schema.trades.entryAt, end),
-      ),
-    )
-    .orderBy(asc(schema.trades.entryAt));
+  const dayTrades = (
+    await db
+      .select()
+      .from(schema.trades)
+      .where(and(gte(schema.trades.entryAt, start), lte(schema.trades.entryAt, end)))
+      .orderBy(asc(schema.trades.entryAt))
+  ).filter((trade) => trade.entryAt != null && etDateString(trade.entryAt) === date);
 
-  trades = trades.filter((trade) => trade.entryAt != null && etDateString(trade.entryAt) === date);
+  const trades = dayTrades.filter((trade) => trade.symbol === symbol);
   const tradeIds = trades.map((trade) => trade.id);
 
   const execs =
@@ -160,19 +157,6 @@ export default async function TickerDayReviewPage({
           .where(inArray(schema.executions.tradeId, tradeIds))
           .orderBy(asc(schema.executions.executedAt))
       : [];
-
-  const dayNote = (
-    await db
-      .select()
-      .from(schema.journalEntries)
-      .where(
-        and(
-          eq(schema.journalEntries.scope, "day"),
-          eq(schema.journalEntries.scopeKey, date),
-        ),
-      )
-      .limit(1)
-  )[0];
 
   const tradeNotes =
     tradeIds.length > 0
@@ -200,13 +184,36 @@ export default async function TickerDayReviewPage({
   const losses = trades.filter((trade) => (netPnl(trade) ?? 0) < 0).length;
   const counted = wins + losses;
   const tradeCycles = buildTradeCycles(execs);
+  const dayPnls = dayTrades.map((trade) => netPnl(trade) ?? 0);
+  const dayWins = dayPnls.filter((pnl) => pnl > 0);
+  const dayLosses = dayPnls.filter((pnl) => pnl < 0);
+  const dayCounted = dayWins.length + dayLosses.length;
+  const dayGrossWins = dayWins.reduce((sum, pnl) => sum + pnl, 0);
+  const dayGrossLosses = Math.abs(dayLosses.reduce((sum, pnl) => sum + pnl, 0));
+  const dayTotalPnl = dayPnls.reduce((sum, pnl) => sum + pnl, 0);
+  const dayTickerMap = new Map<string, { symbol: string; pnl: number }>();
+
+  dayTrades.forEach((trade) => {
+    const current = dayTickerMap.get(trade.symbol) ?? { symbol: trade.symbol, pnl: 0 };
+    current.pnl += netPnl(trade) ?? 0;
+    dayTickerMap.set(trade.symbol, current);
+  });
+
+  const tickerRows = [...dayTickerMap.values()]
+    .sort((a, b) => b.pnl - a.pnl)
+    .map((row) => ({
+      symbol: row.symbol,
+      pnl: row.pnl,
+      active: row.symbol === symbol,
+      href: `/trades/review?date=${date}&symbol=${row.symbol}&returnTo=${encodeURIComponent(backHref)}`,
+    }));
 
   const summaryStats = [
-    { value: `${trades.length.toLocaleString()} trades` },
-    { value: `${execs.length.toLocaleString()} fills` },
-    { value: `${totalShares.toLocaleString()} shares` },
-    { value: counted === 0 ? "— win" : `${Math.round((wins / counted) * 100)}% win` },
-    { value: `P&L ${fmtMoney(totalPnl)}`, className: pnlClass(totalPnl) },
+    { label: `${trades.length.toLocaleString()} trades` },
+    { label: `${execs.length.toLocaleString()} fills` },
+    { label: `${totalShares.toLocaleString()} shares` },
+    { label: counted === 0 ? "— win" : `${Math.round((wins / counted) * 100)}% win` },
+    { label: `P&L ${fmtMoney(totalPnl)}`, className: pnlClass(totalPnl) },
   ];
 
   return (
@@ -217,29 +224,16 @@ export default async function TickerDayReviewPage({
         </Link>
       </div>
 
-      <div className="mb-7 space-y-4">
-        <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.28em] text-[var(--muted)]">
-          Ticker Review
-        </div>
-        <div className="space-y-3">
-          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
-            <h1 className="text-4xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">
-              {symbol}
-            </h1>
-            <span className="font-mono text-base text-[var(--muted)]">{fmtDate(start)}</span>
-          </div>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[13px] font-medium text-[var(--muted)]">
-            {summaryStats.map((stat, index) => (
-              <span key={stat.value} className="flex items-center gap-x-3">
-                {index > 0 ? <span className="text-[var(--faint)]">·</span> : null}
-                <span className={`tabular-nums ${stat.className ?? ""}`}>{stat.value}</span>
-              </span>
-            ))}
-          </div>
-        </div>
+      <div className="mb-7">
+        <ReviewHeader
+          eyebrow="Ticker Review"
+          title={symbol}
+          date={fmtDate(start)}
+          metrics={summaryStats}
+        />
       </div>
 
-      <section className="mb-8 grid gap-10 border-t border-[var(--hairline)] pt-7 xl:grid-cols-[820px_420px] xl:items-start">
+      <section className="mb-8 grid gap-8 border-t border-[var(--hairline)] pt-7 lg:grid-cols-[minmax(0,1fr)_200px] lg:items-start">
         <div className="min-w-0">
           {error ? (
             <div className="rounded-lg border border-[var(--red)]/40 bg-[var(--red)]/10 px-4 py-3 text-sm text-[var(--red)]">
@@ -258,21 +252,13 @@ export default async function TickerDayReviewPage({
           )}
         </div>
 
-        <aside className="space-y-8">
-          <section className="space-y-3">
-            <h2 className="font-mono text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
-              Daily Note
-            </h2>
-            <div className="text-sm leading-6">
-              <RecapNote
-                scope="day"
-                scopeKey={date}
-                text={dayNote?.lessons ?? ""}
-                placeholder="Add a daily note: market read, plan, execution, emotions, what worked, what to fix tomorrow."
-              />
-            </div>
-          </section>
-        </aside>
+        <TickerReviewRail
+          rows={tickerRows}
+          accuracy={dayCounted === 0 ? null : Math.round((dayWins.length / dayCounted) * 100)}
+          profitFactor={dayGrossLosses === 0 ? null : dayGrossWins / dayGrossLosses}
+          pnl={dayTotalPnl}
+          className="w-full lg:w-[200px] lg:justify-self-end"
+        />
       </section>
 
       <section className="max-w-[820px]">

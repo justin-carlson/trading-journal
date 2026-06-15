@@ -4,11 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const nav = [
-  { href: "/", label: "Dashboard" },
   { href: "/calendar", label: "Calendar" },
   { href: "/trades", label: "Trades" },
-  { href: "/reports", label: "Reports" },
   { href: "/journal", label: "Journal" },
+  { href: "/reports", label: "Reports" },
 ];
 
 function isActive(pathname: string, href: string): boolean {

@@ -6,6 +6,7 @@ import { getCandles } from "@/lib/candles";
 import TradeChart from "@/components/TradeChart";
 import TradeJournalNote from "@/components/TradeJournalNote";
 import TradeNoteComposer from "@/components/TradeNoteComposer";
+import ReviewHeader from "@/components/ReviewHeader";
 import { fmtDate, fmtMoney, fmtPrice } from "@/lib/format";
 import { decodeJournalTags } from "@/lib/journalLabels";
 import { etDateString } from "@/lib/time";
@@ -77,72 +78,62 @@ export default async function TradeDetailPage({
 
   const perShare = net == null || trade.quantity === 0 ? null : net / trade.quantity;
 
-  type Stat = { label: string; value: string; color?: string };
-  const stats: Stat[] = [
-    { label: "Shares", value: trade.quantity.toLocaleString() },
-    { label: "Fills", value: String(execs.length) },
-    { label: "Held", value: trade.exitAt ? holdingPeriod(firstAt, trade.exitAt) : "open" },
+  const pnlClass =
+    net == null ? "" : net >= 0 ? "text-[var(--green)]" : "text-[var(--red)]";
+  const perShareClass =
+    perShare == null ? "" : perShare >= 0 ? "text-[var(--green)]" : "text-[var(--red)]";
+  const summaryStats = [
+    { label: "1 trade" },
+    { label: `${execs.length.toLocaleString()} fills` },
+    { label: `${trade.quantity.toLocaleString()} ${Math.abs(trade.quantity) === 1 ? "share" : "shares"}` },
+    { label: `${trade.exitAt ? holdingPeriod(firstAt, trade.exitAt) : "open"} held` },
     {
-      label: "P&L",
-      value: net == null ? "—" : fmtMoney(net),
-      color:
-        net == null ? undefined : net >= 0 ? "var(--green)" : "var(--red)",
+      label: `P&L ${net == null ? "—" : fmtMoney(net)}`,
+      className: pnlClass,
     },
     {
-      label: "Per share",
-      value: perShare == null ? "—" : fmtMoney(perShare),
-      color:
-        perShare == null ? undefined : perShare >= 0 ? "var(--green)" : "var(--red)",
+      label: `Per share ${perShare == null ? "—" : fmtMoney(perShare)}`,
+      className: perShareClass,
     },
   ];
 
   return (
-    <div className="mx-auto max-w-[1280px]">
-      <div className="mb-2">
-        <Link href={backHref} className="mb-12 inline-flex h-10 items-center rounded-md border border-[var(--border)] px-3 text-sm font-semibold text-[var(--muted)] transition-colors hover:border-[var(--blue)] hover:text-[var(--foreground)]">
+    <div className="mx-auto max-w-[1180px]">
+      <div className="mb-12">
+        <Link href={backHref} className="inline-flex h-10 items-center rounded-md border border-[var(--border)] px-3 text-sm font-semibold text-[var(--muted)] transition-colors hover:border-[var(--blue)] hover:text-[var(--foreground)]">
           Back
         </Link>
-        <h1 className="text-xl font-semibold tracking-tight">
-          {trade.symbol}
-          {trade.side === "short" && (
-            <span className="ml-2 align-middle rounded bg-[var(--red)]/15 px-1.5 py-0.5 text-xs font-semibold text-[var(--red)]">
-              SHORT
-            </span>
-          )}
-          <span className="ml-2 text-sm font-normal text-[var(--muted)]">
-            {fmtDate(trade.entryAt)}
-          </span>
-          {trade.entryAt ? (
-            <Link
-              href={`/trades/review?date=${etDateString(trade.entryAt)}&symbol=${trade.symbol}&returnTo=${encodeURIComponent(`/trades/${trade.id}?returnTo=${encodeURIComponent(backHref)}`)}`}
-              className="ml-4 align-middle font-mono text-[12px] font-normal text-[var(--blue)] hover:underline"
-            >
-              Ticker day review -&gt;
-            </Link>
-          ) : null}
-        </h1>
       </div>
 
-      <section className="mb-2 grid max-w-[820px] gap-6 border-t border-[var(--hairline)] py-4 sm:grid-cols-3 lg:grid-cols-5">
-        {stats.map((s) => (
-          <div
-            key={s.label}
-            className="min-w-0"
-          >
-            <div className="mb-2 font-mono text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
-              {s.label}
-            </div>
-            <div
-              className="text-xl font-semibold tabular-nums"
-              style={s.color ? { color: s.color } : undefined}
-            >
-              {s.value}
-            </div>
-          </div>
-        ))}
-      </section>
+      <div className="mb-7">
+        <ReviewHeader
+          eyebrow="Trade Detail"
+          title={
+            <>
+              {trade.symbol}
+              {trade.side === "short" && (
+                <span className="ml-3 align-middle rounded bg-[var(--red)]/15 px-2 py-1 text-xs font-semibold text-[var(--red)]">
+                  SHORT
+                </span>
+              )}
+            </>
+          }
+          date={fmtDate(trade.entryAt)}
+          metrics={summaryStats}
+          action={
+            trade.entryAt ? (
+              <Link
+                href={`/trades/review?date=${etDateString(trade.entryAt)}&symbol=${trade.symbol}&returnTo=${encodeURIComponent(`/trades/${trade.id}?returnTo=${encodeURIComponent(backHref)}`)}`}
+                className="font-mono text-[12px] font-medium text-[var(--blue)] hover:underline"
+              >
+                Ticker day review
+              </Link>
+            ) : null
+          }
+        />
+      </div>
 
-      <section className="mb-6 grid gap-10 xl:grid-cols-[820px_420px] xl:items-start">
+      <section className="mb-6 grid gap-10 border-t border-[var(--hairline)] pt-7 lg:grid-cols-[minmax(0,760px)_minmax(280px,380px)] lg:items-start">
         <div className="min-w-0">
           {error ? (
             <div className="rounded-lg border border-[var(--red)]/40 bg-[var(--red)]/10 px-4 py-3 text-sm text-[var(--red)]">
@@ -156,6 +147,7 @@ export default async function TradeDetailPage({
                 price: e.price,
                 side: e.side as "buy" | "sell",
               }))}
+              variant="review"
             />
           )}
         </div>
@@ -190,7 +182,7 @@ export default async function TradeDetailPage({
         </aside>
       </section>
 
-      <section className="max-w-[820px]">
+      <section className="max-w-[760px]">
         <h2 className="text-sm font-semibold text-[var(--muted)] uppercase tracking-wide mb-2">
           Executions
         </h2>

@@ -6,6 +6,7 @@ import { netPnl } from "@/lib/pnl";
 import { etDateString, etDayRange } from "@/lib/time";
 import RecapNote from "@/components/RecapNote";
 import TradeJournalNote from "@/components/TradeJournalNote";
+import ArchiveSidebar from "@/components/ArchiveSidebar";
 import { decodeJournalTags, journalLabelTone } from "@/lib/journalLabels";
 
 export const dynamic = "force-dynamic";
@@ -276,16 +277,7 @@ function sidebarWeekRangeLabel(weekStart: string, monthKey: string): string {
   const endOfWeek = isoAddDays(weekStart, 4);
   const endOfMonth = lastDayOfMonth(monthStart(monthKey));
   const end = endOfWeek > endOfMonth ? endOfMonth : endOfWeek;
-  const compactFmt = new Intl.DateTimeFormat("en-US", {
-    timeZone: "UTC",
-    month: "short",
-    day: "numeric",
-  });
-  const format = (date: string) => {
-    const [year, month, day] = date.split("-").map(Number);
-    return compactFmt.format(new Date(Date.UTC(year, month - 1, day)));
-  };
-  return `${format(start)}-${format(end).replace(/^[A-Za-z]{3} /, "")}`;
+  return `${Number(start.slice(-2))}-${Number(end.slice(-2))}`;
 }
 
 function monthWeeks(monthKey: string, activeWeekKey: string): ArchiveMonth["weeks"] {
@@ -558,67 +550,48 @@ function JournalSidebar({
   archive: JournalArchive;
   filters: JournalFilters;
 }) {
+  const months = archive.months.map((month) => ({
+    key: month.key,
+    label: month.label,
+    active: month.active,
+    href: filterHref(filters, {
+      date: undefined,
+      preset: "month",
+      from: monthStart(month.key),
+      to: undefined,
+    }),
+    weeks: month.weeks.map((week) => ({
+      key: week.key,
+      label: week.label,
+      rangeLabel: week.rangeLabel,
+      active: week.active,
+      href: filterHref(filters, {
+        date: undefined,
+        preset: "week",
+        from: week.key,
+        to: undefined,
+      }),
+    })),
+  }));
+
+  const years = archive.years.map((year) => ({
+    key: year,
+    label: year,
+    href: filterHref(filters, {
+      date: undefined,
+      preset: "month",
+      from: `${year}-01-01`,
+      to: undefined,
+    }),
+  }));
+
   return (
-    <aside className="md:sticky md:top-24 md:self-start md:pt-56">
-      <div className="space-y-4 font-mono text-[13px] text-[var(--muted)]">
-        {archive.months.map((month) => (
-          <div key={month.key}>
-            <Link
-              href={filterHref(filters, {
-                date: undefined,
-                preset: "month",
-                from: monthStart(month.key),
-                to: undefined,
-              })}
-              className={`block ${
-                month.active
-                  ? "text-[var(--foreground)]"
-                  : "hover:text-[var(--foreground)]"
-              }`}
-            >
-              {month.label}
-            </Link>
-            {month.active && month.weeks.length > 0 ? (
-              <div className="mt-3 space-y-2 pl-3">
-                {month.weeks.map((week) => (
-                  <Link
-                    key={week.key}
-                    href={filterHref(filters, {
-                      date: undefined,
-                      preset: "week",
-                      from: week.key,
-                      to: undefined,
-                    })}
-                    className={`inline-grid grid-cols-[54px_auto] gap-8 text-[13px] leading-5 ${
-                      week.active
-                        ? "text-[var(--green)]"
-                        : "hover:text-[var(--foreground)]"
-                    }`}
-                  >
-                    <span>{week.label}</span>
-                    <span>{week.rangeLabel}</span>
-                  </Link>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        ))}
-        {archive.years.map((year) => (
-          <Link
-            key={year}
-            href={filterHref(filters, {
-              date: undefined,
-              preset: "month",
-              from: `${year}-01-01`,
-              to: undefined,
-            })}
-            className="block hover:text-[var(--foreground)]"
-          >
-            {year}
-          </Link>
-        ))}
-      </div>
-    </aside>
+    <ArchiveSidebar
+      ariaLabel="Journal archive"
+      months={months}
+      years={years}
+      offsetClassName="md:pt-[11.25rem]"
+    />
   );
 }
 
@@ -654,7 +627,7 @@ function DayEntry({
           day.pnl >= 0 ? "bg-[var(--green)]" : "bg-[var(--red)]"
         }`}
       />
-      <div className="max-w-[760px]">
+      <div className="max-w-[665px]">
         <div className="flex items-baseline gap-3">
           <h3 className="text-[24px] font-semibold leading-none tracking-[-0.01em] text-[#e6edf3]">
             {weekdayLabel(day.date)}
@@ -666,7 +639,7 @@ function DayEntry({
         <div className="mt-3">
           <MetricLine trades={day.trades} pnl={day.pnl} />
         </div>
-        <div className="mt-4 max-w-3xl text-[15.5px] font-light leading-7 text-[var(--foreground)]">
+        <div className="mt-4 max-w-[665px] text-[15.5px] font-light leading-7 text-[var(--foreground)]">
           <RecapNote
             scope="day"
             scopeKey={day.date}
@@ -721,7 +694,7 @@ function WeekSection({
       <div className="mt-3">
         <MetricLine trades={trades} pnl={week.pnl} />
       </div>
-      <div className="mt-4 max-w-none text-[16px] font-light leading-7 text-[var(--foreground)]">
+      <div className="mt-4 max-w-[665px] text-[16px] font-light leading-7 text-[var(--foreground)]">
         <RecapNote
           scope="week"
           scopeKey={week.key}
@@ -769,7 +742,7 @@ function MonthView({
       <div className="mt-4">
         <MetricLine trades={trades} pnl={month.pnl} />
       </div>
-      <div className="mt-8 max-w-4xl text-[18px] font-light leading-8 text-[var(--foreground)]">
+      <div className="mt-8 max-w-[665px] text-[18px] font-light leading-8 text-[var(--foreground)]">
         <RecapNote
           scope="month"
           scopeKey={month.key}
@@ -821,7 +794,7 @@ function WeekView({
       <div className="mt-4">
         <MetricLine trades={trades} pnl={week.pnl} />
       </div>
-      <div className="mt-8 max-w-4xl text-[18px] font-light leading-8 text-[var(--foreground)]">
+      <div className="mt-8 max-w-[665px] text-[18px] font-light leading-8 text-[var(--foreground)]">
         <RecapNote
           scope="week"
           scopeKey={week.key}
@@ -872,7 +845,7 @@ function DayView({
         <MetricLine trades={day.trades} pnl={day.pnl} />
       </div>
       <div className="mt-10 max-w-[760px]">
-        <div className="max-w-4xl text-[18px] font-light leading-8 text-[var(--foreground)]">
+        <div className="max-w-[665px] text-[18px] font-light leading-8 text-[var(--foreground)]">
           <RecapNote
             scope="day"
             scopeKey={day.date}
@@ -928,9 +901,9 @@ export default async function JournalPage({
       : undefined);
 
   return (
-    <div className="mx-auto grid w-full max-w-[1352px] gap-10 px-4 pb-24 pt-8 md:grid-cols-[150px_minmax(0,760px)_150px] xl:grid-cols-[190px_minmax(0,860px)_190px] xl:gap-14">
+    <div className="mx-auto grid w-full max-w-[905px] gap-8 pb-24 pt-8 md:grid-cols-[180px_minmax(0,665px)] xl:grid-cols-[200px_minmax(0,665px)] xl:gap-10">
       <JournalSidebar archive={archive} filters={filters} />
-      <main className="min-w-0 w-full">
+      <main className="mx-auto min-w-0 w-full max-w-[665px]">
         <CurrentShortcuts filters={filters} />
         <section className="mt-10">
           {activePreset === "today" && selectedDay ? (

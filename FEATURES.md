@@ -40,6 +40,14 @@
 - ✅ Execution list for the trade (fills, running P&L).
 - ✅ Trade stats: P&L $/%, R-multiple, holding period, size/exposure.
 - ✅ **Tags**, **setup/strategy** label, **notes** (markdown).
+- 🔜 **Trade chart view model:** keep two clear trade chart contexts:
+  - **Single trade chart**: usually reached from a journal trade note; shows one
+    trade, the trade note in the right column, and the shared chart pan/zoom
+    behavior.
+  - **Trade Review chart**: reached from the Trades Review ticker module; shows
+    all trades/cycles for one ticker on one day, with the same-day ticker module
+    in the right column for quick jumps to other tickers. Trade cycles are
+    informational for now, not clickable drilldowns.
 - 🔜 Chart navigation polish (easing, momentum, resize) — *separate UI track*.
 - 🔜 "Open in TradingView" deep link.
 - 🔜 Stop/target lines & R visualization on the chart.
