@@ -73,10 +73,6 @@ function divider() {
   detail("------------------------------------------------------------");
 }
 
-function rule() {
-  console.log(`${colors.dim}******************************${colors.reset}`);
-}
-
 function quietStep(label, fn) {
   output.write(`${colors.dim}${label}...${colors.reset}`);
   try {
@@ -182,16 +178,15 @@ function ensureDataDir(dbPath) {
 }
 
 async function setupLocal() {
-  rule();
-  rule();
-  console.log("");
   section("Step 2 of 3: Set up your journal");
   detail("Press Enter to accept the default answer in brackets.");
   console.log("");
 
   heading("Choose a starting point");
+  console.log("");
   console.log(`${colors.bold}1.${colors.reset} Install Trading Journal using demo data with sample trades and notes`);
   detail("   Best for previewing the app before using personal data.");
+  console.log("");
   console.log(`${colors.bold}2.${colors.reset} Install Trading Journal to use your own data`);
   detail("   Best when you are ready to import your own broker CSV.");
   console.log("");
@@ -206,9 +201,10 @@ async function setupLocal() {
 
   console.log("");
   divider();
+  console.log("");
   heading("Chart data");
   console.log("Massive provides candle data for charts.");
-  console.log("Get your free Massive key at https://www.massive.com/");
+  console.log("Sign up for your free Massive key at https://www.massive.com/");
   detail("You can skip this now. The app will still run, but uncached charts will not fetch candles.");
   console.log("");
   const keyPrompt = defaultKey
@@ -232,6 +228,7 @@ async function setupLocal() {
   writeLocalEnv({ dbPath, massiveKey });
   console.log("");
   divider();
+  console.log("");
   heading("Local database");
   detail(`Settings: ${ENV_PATH}`);
   detail(`Database: ${dbPath}`);

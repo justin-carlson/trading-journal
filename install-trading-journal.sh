@@ -59,11 +59,9 @@ banner
 echo
 echo "This installs project dependencies."
 echo "It sets up a local database inside this folder."
-echo "It does not install anything globally."
 echo "You can safely rerun this installer later."
 echo
-echo "${DIM}******************************${RESET}"
-echo "${DIM}******************************${RESET}"
+echo "${DIM}------------------------------------------------------------${RESET}"
 echo
 
 if ! command -v npm >/dev/null 2>&1; then
@@ -79,4 +77,7 @@ npm run --silent setup:local
 
 echo
 echo "${GREEN}${BOLD}Step 3 of 3: Starting Trading Journal locally${RESET}"
+echo "Local app: ${BLUE}http://localhost:3000${RESET}"
+echo "${DIM}If port 3000 is already in use, Next.js will print the available localhost URL below.${RESET}"
+echo
 npm run dev
