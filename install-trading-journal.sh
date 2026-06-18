@@ -18,5 +18,5 @@ npm install
 npm run setup:local
 
 echo
-echo "Starting Trading Journal..."
+echo "Starting Trading Journal locally..."
 npm run dev
