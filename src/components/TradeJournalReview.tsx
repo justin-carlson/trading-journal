@@ -823,14 +823,19 @@ function WeekSection({
 
 function TradeReviewSidebar({
   archive,
+  todayHref,
+  todayActive = false,
   enableWeekScrollSpy = false,
 }: {
   archive: ReviewArchive;
+  todayHref: string;
+  todayActive?: boolean;
   enableWeekScrollSpy?: boolean;
 }) {
   return (
     <ArchiveSidebar
       ariaLabel="Journal archive"
+      topLinks={[{ key: "today", label: "Today", href: todayHref, active: todayActive }]}
       months={archive.months}
       years={archive.years}
       offsetClassName="md:pt-[5.75rem]"
@@ -891,7 +896,12 @@ export default async function TradeJournalReview({
       />
 
       <div className="grid gap-8 md:grid-cols-[180px_minmax(0,665px)] xl:grid-cols-[200px_minmax(0,665px)] xl:gap-10">
-        <TradeReviewSidebar archive={archive} enableWeekScrollSpy={preset === "month"} />
+        <TradeReviewSidebar
+          archive={archive}
+          todayHref={journalReviewHref(basePath, { preset: "today" })}
+          todayActive={preset === "today"}
+          enableWeekScrollSpy={preset === "month"}
+        />
         <div className="min-w-0 space-y-8">
           {preset === "week" ? (
             <ScopeHeader>

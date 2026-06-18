@@ -22,6 +22,12 @@ export type ArchiveSidebarMonth = {
 
 type ArchiveSidebarProps = {
   ariaLabel: string;
+  topLinks?: {
+    key: string;
+    label: string;
+    href: string;
+    active?: boolean;
+  }[];
   months: ArchiveSidebarMonth[];
   years?: {
     key: string;
@@ -34,6 +40,7 @@ type ArchiveSidebarProps = {
 
 export default function ArchiveSidebar({
   ariaLabel,
+  topLinks = [],
   months,
   years = [],
   offsetClassName = "md:pt-56",
@@ -86,6 +93,23 @@ export default function ArchiveSidebar({
         aria-label={ariaLabel}
         className="space-y-4 font-mono text-[13px] leading-5 text-[var(--muted)]"
       >
+        {topLinks.length > 0 ? (
+          <div className="space-y-2 pb-2">
+            {topLinks.map((link) => (
+              <Link
+                key={link.key}
+                href={link.href}
+                className={`block ${
+                  link.active
+                    ? "text-[var(--foreground)]"
+                    : "hover:text-[var(--foreground)]"
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        ) : null}
         {months.map((month) => {
           const activeSidebarWeekKey = activeWeekKey ?? month.weeks.find((item) => item.active)?.key;
 
