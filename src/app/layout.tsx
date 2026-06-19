@@ -21,8 +21,12 @@ import { getActiveAccount, listAccounts } from "@/lib/accountScope";
 import { canImportData } from "@/lib/demoMode";
 
 export const metadata: Metadata = {
-  title: "Trading Journal",
-  description: "Personal, local-first trading journal",
+  title: "Trading Journal AI",
+  description: "Local-first trading journal for review, recaps, charts, and performance analysis.",
+  icons: {
+    icon: [{ url: "/brand/trading-journal-ai-icon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/brand/trading-journal-ai-icon.png" }],
+  },
 };
 
 export default async function RootLayout({
@@ -50,7 +54,7 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col">
         <header className="border-b border-[var(--border)] px-5 py-3 flex items-center gap-6">
           <Link href="/" className="font-semibold tracking-tight">
-            Trading&nbsp;Journal
+            Trading&nbsp;Journal&nbsp;AI
           </Link>
           <NavLinks />
           <div className="ml-auto flex items-start gap-3">
