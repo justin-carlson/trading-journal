@@ -32,6 +32,8 @@ const colors =
         red: "",
         reset: "",
       };
+const INDENT = "     ";
+const INSET_RULE = `${INDENT}-------------------------------------------------------`;
 
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
@@ -50,15 +52,15 @@ function run(command, args, options = {}) {
 }
 
 function heading(text) {
-  console.log(`${colors.bold}${text}${colors.reset}`);
+  console.log(`${INDENT}${colors.bold}${text}${colors.reset}`);
 }
 
 function section(text) {
-  console.log(`${colors.blue}${colors.bold}${text}${colors.reset}`);
+  console.log(`${INDENT}${colors.blue}${colors.bold}${text}${colors.reset}`);
 }
 
 function detail(text) {
-  console.log(`${colors.dim}${text}${colors.reset}`);
+  console.log(`${INDENT}${colors.dim}${text}${colors.reset}`);
 }
 
 function cyan(text) {
@@ -66,19 +68,19 @@ function cyan(text) {
 }
 
 function success(text) {
-  console.log(`${colors.green}${text}${colors.reset}`);
+  console.log(`${INDENT}${colors.green}${text}${colors.reset}`);
 }
 
 function warn(text) {
-  console.log(`${colors.yellow}${text}${colors.reset}`);
+  console.log(`${INDENT}${colors.yellow}${text}${colors.reset}`);
 }
 
 function divider() {
-  cyan("------------------------------------------------------------");
+  cyan(INSET_RULE);
 }
 
 function quietStep(label, fn) {
-  output.write(`${colors.dim}${label}...${colors.reset}`);
+  output.write(`${INDENT}${colors.dim}${label}...${colors.reset}`);
   try {
     fn();
     console.log(` ${colors.green}done${colors.reset}`);
@@ -96,6 +98,15 @@ function question(prompt) {
       resolveQuestion(answer.trim());
     });
   });
+}
+
+async function chooseOption(prompt, allowedOptions = ["1", "2"]) {
+  const allowed = new Set(allowedOptions);
+  while (true) {
+    const answer = await question(prompt);
+    if (allowed.has(answer)) return answer;
+    warn(`Choose ${allowedOptions.join(" or ")}.`);
+  }
 }
 
 function secretQuestion(prompt) {
@@ -182,23 +193,23 @@ function ensureDataDir(dbPath) {
 }
 
 async function setupLocal() {
-  console.log(`${colors.cyan}${colors.bold}Step 2 of 3: Set up your journal${colors.reset}`);
-  detail("Press Enter to accept the default answer in brackets.");
+  console.log(`${INDENT}${colors.cyan}${colors.bold}Step 2 of 3: Set up your journal${colors.reset}`);
+  detail("Type 1 or 2, then press Enter.");
   console.log("");
 
   heading("Choose a starting point");
   console.log("");
-  console.log(`${colors.bold}1.${colors.reset} Install Trading Journal using demo data with sample trades and notes`);
+  console.log(`${INDENT}${colors.bold}1.${colors.reset} Install Trading Journal using demo data with sample trades and notes`);
   detail("   Best for previewing the app before using personal data.");
   console.log("");
-  console.log(`${colors.bold}2.${colors.reset} Install Trading Journal to use your own data`);
+  console.log(`${INDENT}${colors.bold}2.${colors.reset} Install Trading Journal to use your own data`);
   detail("   Best when you are ready to import your own broker CSV.");
   console.log("");
 
   const existingEnv = parseEnvFile(ENV_PATH);
   const defaultKey = existingEnv.get("MASSIVE_API_KEY")?.trim();
-  const modeAnswer = await question("Choose a mode [1]: ");
-  const useDemo = !/^2|n(o)?$/i.test(modeAnswer);
+  const modeAnswer = await chooseOption(`${INDENT}Choose an option (1 or 2): `);
+  const useDemo = modeAnswer === "1";
   const dbPath = useDemo ? DEMO_DB : LOCAL_DB;
   console.log("");
   success(useDemo ? "Demo mode selected." : "Local data mode selected.");
@@ -207,23 +218,38 @@ async function setupLocal() {
   divider();
   console.log("");
   heading("Chart data");
-  console.log("Massive provides candle data for charts.");
-  console.log("Sign up for your free Massive key at https://www.massive.com/");
+  console.log(`${INDENT}Massive provides candle data for charts.`);
+  console.log(`${INDENT}Sign up for your free Massive key at https://www.massive.com/`);
   warn("Optional - skip this and uncached charts will not fetch candles.");
   console.log("");
-  const keyPrompt = defaultKey
-    ? "Massive API key already found. Press Enter to keep it, or enter a new key: "
-    : "Enter your Massive API key, or press Enter to skip this: ";
-  const keyAnswer = await secretQuestion(keyPrompt);
-  const massiveKey = keyAnswer || defaultKey || "";
+  let massiveKey = defaultKey || "";
+  console.log(`${INDENT}${colors.bold}1.${colors.reset} Add chart data with a Massive API key`);
+  console.log(`${INDENT}${colors.bold}2.${colors.reset} Skip chart data for now`);
+  console.log("");
+  const chartAnswer = await chooseOption(`${INDENT}Choose an option (1 or 2): `);
+  const wantsKey = chartAnswer === "1";
+
+  if (wantsKey) {
+    const keyPrompt = defaultKey
+      ? `${INDENT}Existing key found. Press Enter to keep it, or paste a new key: `
+      : `${INDENT}Enter your Massive API key: `;
+    const keyAnswer = await secretQuestion(keyPrompt);
+    massiveKey = keyAnswer || defaultKey || "";
+    if (!massiveKey) {
+      warn("No key entered. Chart data skipped for now.");
+    }
+  } else {
+    massiveKey = "";
+    success("Chart data skipped for now.");
+  }
 
   if (massiveKey) {
-    output.write("Testing Massive key... ");
+    output.write(`${INDENT}Testing Massive key... `);
     const result = await testMassiveKey(massiveKey);
     if (result.ok) {
-      success("ok");
+      console.log(`${colors.green}ok${colors.reset}`);
     } else {
-      warn("could not confirm");
+      console.log(`${colors.yellow}could not confirm${colors.reset}`);
       detail(`Massive key was saved, but the test request failed: ${result.message}`);
     }
   }
@@ -245,11 +271,15 @@ async function setupLocal() {
     quietStep("Loading demo trades and notes", () => {
       run("npm", ["run", "--silent", "demo:paper"], { quiet: true });
     });
-    success("\nDemo trades and journal notes are ready.");
+    console.log("");
+    success("Demo trades and journal notes are ready.");
   } else {
-    success("\nEmpty local journal is ready.");
+    console.log("");
+    success("Empty local journal is ready.");
     detail("Use Import in the app when you have a broker CSV.");
   }
+  console.log("");
+  divider();
 }
 
 function resetDemo() {
@@ -261,7 +291,8 @@ function resetDemo() {
   quietStep("Loading demo trades and notes", () => {
     run("npm", ["run", "--silent", "demo:paper"], { quiet: true });
   });
-  success("\nReset local demo data in data/tradingjournaldemo.db.");
+  console.log("");
+  success("Reset local demo data in data/tradingjournaldemo.db.");
 }
 
 async function main() {

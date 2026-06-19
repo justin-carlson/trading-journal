@@ -112,62 +112,68 @@
   <body>
     <main class="terminal" aria-label="Trading Journal installer preview">
       <pre><span class="cyan">------------------------------------------------------------</span>
-  <span class="square">■</span>  <span class="cyan bold">Trading Journal</span> <span class="dim">installer</span>
 
-     <span class="dim">A local-first trading journal built around the review habit first:</span>
-     <span class="dim">write the recap, see the day in context, and drill into the trade</span>
-     <span class="dim">evidence only when it matters.</span>
-<span class="cyan">------------------------------------------------------------</span>
+  <span class="square">■</span>  <span class="bold">Trading Journal</span> installer
 
-  Installs project dependencies
-  Sets up a local database inside this folder
-  Safe to rerun later
+     A local-first trading journal built around the review habit first:
+     write the recap, see the day in context, and drill into the trade
+     evidence only when it matters.
 
-<span class="cyan">------------------------------------------------------------</span>
+     <span class="cyan">-------------------------------------------------------</span>
 
-<span class="cyan bold">Step 1 of 3: Installing dependencies</span><span class="dim">...</span> <span class="green">done</span>
+     <span class="cyan bold">Step 1 of 3: Installing dependencies</span><span class="dim">...</span> <span class="green">done</span>
 
-<span class="cyan bold">Step 2 of 3: Set up your journal</span>
-<span class="dim">Press Enter to accept the default answer in brackets.</span>
+     <span class="cyan">-------------------------------------------------------</span>
 
-<span class="bold">Choose a starting point</span>
+     <span class="cyan bold">Step 2 of 3: Set up your journal</span>
+     <span class="dim">Type 1 or 2, then press Enter.</span>
 
-<span class="bold">1.</span> Install Trading Journal using demo data with sample trades and notes
-<span class="dim">   Best for previewing the app before using personal data.</span>
+     <span class="bold">Choose a starting point</span>
 
-<span class="bold">2.</span> Install Trading Journal to use your own data
-<span class="dim">   Best when you are ready to import your own broker CSV.</span>
+     <span class="bold">1.</span> Install Trading Journal using demo data with sample trades and notes
+     <span class="dim">   Best for previewing the app before using personal data.</span>
 
-Choose a mode [1]: 
+     <span class="bold">2.</span> Install Trading Journal to use your own data
+     <span class="dim">   Best when you are ready to import your own broker CSV.</span>
 
-<span class="green">Demo mode selected.</span>
+     Choose an option (1 or 2): 1
 
-<span class="cyan">------------------------------------------------------------</span>
+     <span class="green">Demo mode selected.</span>
 
-<span class="bold">Chart data</span>
-Massive provides candle data for charts.
-Sign up for your free Massive key at https://www.massive.com/
-<span class="yellow">Optional - skip this and uncached charts will not fetch candles.</span>
+     <span class="cyan">-------------------------------------------------------</span>
 
-Enter your Massive API key, or press Enter to skip this: <span class="cursor"></span>
+     <span class="bold">Chart data</span>
+     Massive provides candle data for charts.
+     Sign up for your free Massive key at https://www.massive.com/
+     <span class="yellow">Optional - skip this and uncached charts will not fetch candles.</span>
 
-<span class="cyan">------------------------------------------------------------</span>
+     <span class="bold">1.</span> Add chart data with a Massive API key
+     <span class="bold">2.</span> Skip chart data for now
 
-<span class="bold">Local database</span>
-<span class="dim">Settings: .env.local</span>
-<span class="dim">Database: data/tradingjournaldemo.db</span>
-<span class="dim">Applying database migrations...</span> <span class="green">done</span>
-<span class="dim">Loading demo trades and notes...</span> <span class="green">done</span>
+     Choose an option (1 or 2): 1
 
-<span class="green">Demo trades and journal notes are ready.</span>
+     <span class="dim">If you choose 1, the next prompt is:</span>
+     Enter your Massive API key: ********
+     Testing Massive key... <span class="green">ok</span>
 
-<span class="cyan bold">Step 3 of 3: Starting Trading Journal locally</span>
-Local app: <a href="http://localhost:3000">http://localhost:3000</a>
-<span class="dim">If port 3000 is already in use, Next.js will print the available localhost URL below.</span>
+     <span class="cyan">-------------------------------------------------------</span>
 
-<span class="bold">Start and stop</span>
-  To stop the app: press <span class="cyan">Ctrl+C</span> in this terminal.
-  To start it again later: run <span class="cyan">npm run dev</span> from this folder.</pre>
+     <span class="bold">Local database</span>
+     <span class="dim">Settings: .env.local</span>
+     <span class="dim">Database: data/tradingjournaldemo.db</span>
+     <span class="dim">Applying database migrations...</span> <span class="green">done</span>
+     <span class="dim">Loading demo trades and notes...</span> <span class="green">done</span>
+
+     <span class="green">Demo trades and journal notes are ready.</span>
+
+     <span class="cyan">-------------------------------------------------------</span>
+
+     <span class="cyan bold">Step 3 of 3: Starting Trading Journal locally</span>
+     Local app: <a href="http://localhost:3000">http://localhost:3000</a>
+
+     <span class="bold">Start and stop</span>
+     To stop the app: press <span class="cyan">Ctrl+C</span> in this terminal.
+     To start it again later: run <span class="cyan">npm run dev</span> from this folder.</pre>
     </main>
   </body>
 </html>

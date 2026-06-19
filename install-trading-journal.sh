@@ -22,22 +22,26 @@ else
 fi
 
 LOG_FILE=".install-trading-journal.log"
+INDENT="     "
+INSET_RULE="${INDENT}-------------------------------------------------------"
 
 banner() {
   echo "${CYAN}------------------------------------------------------------${RESET}"
-  echo "  ${CYAN}■${RESET}  ${CYAN}${BOLD}Trading Journal${RESET} ${DIM}installer${RESET}"
   echo
-  echo "     ${DIM}A local-first trading journal built around the review habit first:${RESET}"
-  echo "     ${DIM}write the recap, see the day in context, and drill into the trade${RESET}"
-  echo "     ${DIM}evidence only when it matters.${RESET}"
-  echo "${CYAN}------------------------------------------------------------${RESET}"
+  echo "  ${CYAN}■${RESET}  ${BOLD}Trading Journal${RESET} installer"
+  echo
+  echo "     A local-first trading journal built around the review habit first:"
+  echo "     write the recap, see the day in context, and drill into the trade"
+  echo "     evidence only when it matters."
+  echo
+  echo "${CYAN}${INSET_RULE}${RESET}"
 }
 
 run_quiet() {
   local label="$1"
   shift
 
-  printf "%s" "${CYAN}${BOLD}${label}${RESET}${DIM}...${RESET}"
+  printf "%s" "${INDENT}${CYAN}${BOLD}${label}${RESET}${DIM}...${RESET}"
   if "$@" >"$LOG_FILE" 2>&1; then
     printf " %s\n" "${GREEN}done${RESET}"
   else
@@ -53,12 +57,6 @@ run_quiet() {
 
 banner
 echo
-echo "  Installs project dependencies"
-echo "  Sets up a local database inside this folder"
-echo "  Safe to rerun later"
-echo
-echo "${CYAN}------------------------------------------------------------${RESET}"
-echo
 
 if ! command -v npm >/dev/null 2>&1; then
   echo "${RED}npm was not found.${RESET} Install Node.js 20 or newer first, then run this script again."
@@ -68,16 +66,17 @@ fi
 run_quiet "Step 1 of 3: Installing dependencies" npm install --no-audit --fund=false
 
 echo
-echo "${BLUE}${BOLD}Setup${RESET}"
+echo "${CYAN}${INSET_RULE}${RESET}"
+echo
+echo "${INDENT}${BLUE}${BOLD}Setup${RESET}"
 npm run --silent setup:local
 
 echo
-echo "${CYAN}${BOLD}Step 3 of 3: Starting Trading Journal locally${RESET}"
-echo "Local app: ${BLUE}http://localhost:3000${RESET}"
-echo "${DIM}If port 3000 is already in use, Next.js will print the available localhost URL below.${RESET}"
+echo "${INDENT}${CYAN}${BOLD}Step 3 of 3: Starting Trading Journal locally${RESET}"
+echo "${INDENT}Local app: ${BLUE}http://localhost:3000${RESET}"
 echo
-echo "${BOLD}Start and stop${RESET}"
-echo "  To stop the app: press ${CYAN}Ctrl+C${RESET} in this terminal."
-echo "  To start it again later: run ${CYAN}npm run dev${RESET} from this folder."
+echo "${INDENT}${BOLD}Start and stop${RESET}"
+echo "${INDENT}To stop the app: press ${CYAN}Ctrl+C${RESET} in this terminal."
+echo "${INDENT}To start it again later: run ${CYAN}npm run dev${RESET} from this folder."
 echo
 npm run dev

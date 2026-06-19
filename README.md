@@ -137,16 +137,23 @@ Both modes run on your machine and store data in a local SQLite database inside
 this project folder.
 
 ```bash
+git clone https://github.com/trading-journal-ai/trading-journal.git
+cd trading-journal
 ./install-trading-journal.sh
 ```
 
-That one command:
+Run the installer from inside the cloned `trading-journal` folder. If you see
+`no such file or directory`, you are probably one folder too high. Run
+`cd trading-journal` first, then run `./install-trading-journal.sh`.
+
+The installer:
 
 - Installs the project dependencies with `npm install`.
 - Asks whether you want to start with the included demo data or an empty local
   journal.
-- Asks for a Massive API key, saves it to `.env.local`, and checks whether the
-  key works. The key is hidden while you paste it.
+- Asks whether you want to add chart data with a Massive API key or skip it for
+  now. If you add a key, it saves it to `.env.local` and checks whether the key
+  works. The key is hidden while you paste it.
 - Creates the local SQLite database.
 - Starts the app at [http://localhost:3000](http://localhost:3000).
 
