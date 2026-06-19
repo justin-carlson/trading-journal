@@ -1,34 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
   <title id="title">Trading Journal AI icon</title>
   <desc id="desc">A clean journal page with centered candlestick marks.</desc>
-  <defs>
-    <linearGradient id="page" x1="272" y1="148" x2="752" y2="876" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#f8fbff"/>
-      <stop offset="1" stop-color="#dbe5f2"/>
-    </linearGradient>
-    <linearGradient id="cover" x1="176" y1="112" x2="848" y2="912" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#171c26"/>
-      <stop offset="1" stop-color="#0b0d12"/>
-    </linearGradient>
-    <filter id="shadow" x="120" y="120" width="784" height="784" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-      <feDropShadow dx="0" dy="28" stdDeviation="34" flood-color="#000000" flood-opacity="0.42"/>
-    </filter>
-  </defs>
 
-  <rect width="1024" height="1024" rx="220" fill="#0b0d12"/>
-  <rect x="64" y="64" width="896" height="896" rx="184" fill="#12151d"/>
-  <rect x="172" y="172" width="680" height="680" rx="154" fill="url(#cover)" filter="url(#shadow)"/>
-  <rect x="238" y="238" width="548" height="548" rx="88" fill="url(#page)"/>
+  <rect width="1024" height="1024" fill="#ffffff"/>
 
-  <path d="M352 390V650" stroke="#1db26b" stroke-width="26" stroke-linecap="square"/>
-  <rect x="312" y="474" width="80" height="102" fill="#1db26b"/>
+  <path d="M366 360V656" stroke="#1db26b" stroke-width="24" stroke-linecap="square"/>
+  <rect x="328" y="458" width="76" height="98" fill="#1db26b"/>
 
-  <path d="M462 330V610" stroke="#f05143" stroke-width="26" stroke-linecap="square"/>
-  <rect x="422" y="434" width="80" height="76" fill="#f05143"/>
+  <path d="M464 324V628" stroke="#f05143" stroke-width="24" stroke-linecap="square"/>
+  <rect x="426" y="438" width="76" height="72" fill="#f05143"/>
 
-  <path d="M572 440V700" stroke="#1db26b" stroke-width="26" stroke-linecap="square"/>
-  <rect x="532" y="528" width="80" height="126" fill="#1db26b"/>
+  <path d="M562 410V708" stroke="#1db26b" stroke-width="24" stroke-linecap="square"/>
+  <rect x="524" y="510" width="76" height="120" fill="#1db26b"/>
 
-  <path d="M682 320V610" stroke="#1db26b" stroke-width="26" stroke-linecap="square"/>
-  <rect x="642" y="380" width="80" height="146" fill="#1db26b"/>
+  <path d="M660 314V654" stroke="#1db26b" stroke-width="24" stroke-linecap="square"/>
+  <rect x="622" y="402" width="76" height="138" fill="#1db26b"/>
 </svg>
