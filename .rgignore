@@ -1,0 +1,4 @@
+.next/
+node_modules/
+docs/design/DESIGN_SYSTEM_ONE_SHEET.html
+samples/Journal Design/*_files/

@@ -13,8 +13,9 @@ and tracking performance over time.
 > rather than redesign it.
 
 > **Design-system note.** Visual language, type roles, color tokens, spacing,
-> and component rules live in [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md). Journal
-> structure and note behavior live in [JOURNAL_DESIGN.md](JOURNAL_DESIGN.md).
+> and component rules live in
+> [DESIGN_SYSTEM.md](../design/DESIGN_SYSTEM.md). Journal structure and note
+> behavior live in [JOURNAL_DESIGN.md](../design/JOURNAL_DESIGN.md).
 
 ---
 
@@ -125,7 +126,8 @@ a v1 deliverable.
 - Emotional state / discipline tracking (e.g. followed plan? FOMO? revenge
   trade?).
 - Searchable journal of mistakes & lessons across trades.
-- Journal design details live in **[JOURNAL_DESIGN.md](JOURNAL_DESIGN.md)**:
+- Journal design details live in
+  **[JOURNAL_DESIGN.md](../design/JOURNAL_DESIGN.md)**:
   root-level, text-first month/week/day/trade notes with emotion/process review
   and trade notes rolling up into the Journal.
 
@@ -354,7 +356,7 @@ how it feeds this project:
   price in range. **Result: 91/91 PASS** (see §9). Configurable TZ, price
   tolerance, rate-limit delay.
 - **`scripts/test-massive-candles.mjs`** — single-symbol probe.
-- **`docs/prototypes/trade_chart (10)-prototype.html`** — prototype wired to the dev server.
+- **`docs/design/prototypes/trade_chart (10)-prototype.html`** — prototype wired to the dev server.
 - Run: put `MASSIVE_API_KEY=…` in `.env.local`, then
   `node scripts/dev-chart-server.mjs` → http://127.0.0.1:4173/.
 

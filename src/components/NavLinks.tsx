@@ -7,7 +7,7 @@ const nav = [
   { href: "/journal", label: "Journal" },
   { href: "/calendar", label: "Calendar" },
   { href: "/trades", label: "Trades" },
-  { href: "/reports", label: "Reports" },
+  { href: "/reports", label: "Analytics" },
 ];
 
 function isActive(pathname: string, href: string): boolean {

@@ -67,7 +67,9 @@ function contentTypeFor(path) {
 
 async function serveStatic(req, res, url) {
   const decodedPath = decodeURIComponent(
-    url.pathname === "/" ? "/docs/prototypes/trade_chart (10)-prototype.html" : url.pathname,
+    url.pathname === "/"
+      ? "/docs/design/prototypes/trade_chart (10)-prototype.html"
+      : url.pathname,
   );
   const filePath = normalize(join(ROOT, decodedPath));
   const relativePath = relative(ROOT, filePath);

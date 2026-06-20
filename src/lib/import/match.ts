@@ -4,7 +4,7 @@
  * Walks each symbol's fills chronologically tracking net position. A trade opens
  * when position leaves zero and closes when it returns to zero; scaling in/out
  * stays within one trade, and a fill that flips through zero splits into a close
- * + a new opposite trade. (See docs/DESIGN.md §5.)
+ * + a new opposite trade. (See docs/product/PRODUCT_SPEC.md §5.)
  */
 import type { ParsedExecution } from "./tos";
 

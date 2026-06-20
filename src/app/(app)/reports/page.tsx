@@ -898,6 +898,24 @@ function PerformanceSnapshot({ sections }: { sections: StatSection[] }) {
   );
 }
 
+function AnalyticsSettingsIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" />
+      <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2a2 2 0 1 1-4 0V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1A2 2 0 1 1 4.2 17l.1-.1A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.6-1H2.8a2 2 0 1 1 0-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7A2 2 0 1 1 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3h.1A1.7 1.7 0 0 0 10 3V2.8a2 2 0 1 1 4 0V3a1.7 1.7 0 0 0 1 1.6h.1a1.7 1.7 0 0 0 1.9-.3l.1-.1A2 2 0 1 1 19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1A1.7 1.7 0 0 0 21 10h.2a2 2 0 1 1 0 4H21a1.7 1.7 0 0 0-1.6 1Z" />
+    </svg>
+  );
+}
+
 function PnlModule({
   points,
   rangeLabel,
@@ -909,15 +927,31 @@ function PnlModule({
 }) {
   return (
     <section>
-      <h2 className="mb-8 flex flex-wrap items-baseline gap-x-4 gap-y-2">
-        <span className="text-5xl font-semibold leading-none tracking-[-0.03em] text-[var(--foreground)]">
-          Performance
-        </span>
-        {" "}
-        {rangeLabel !== "All dates" ? (
-          <span className="font-mono text-base text-[var(--muted)]">{rangeLabel}</span>
-        ) : null}
-      </h2>
+      <details className="group mb-8">
+        <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-x-4 gap-y-3 [&::-webkit-details-marker]:hidden">
+          <h2 className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+            <span className="text-5xl font-semibold leading-none tracking-[-0.03em] text-[var(--foreground)]">
+              Analytics
+            </span>
+            {rangeLabel !== "All dates" ? (
+              <span className="font-mono text-base text-[var(--muted)]">{rangeLabel}</span>
+            ) : null}
+          </h2>
+          <span
+            aria-label="Analytics settings"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] transition-colors group-hover:border-[var(--blue)] group-hover:text-[var(--foreground)]"
+          >
+            <AnalyticsSettingsIcon />
+          </span>
+        </summary>
+        <div className="mt-5 max-w-xl rounded-md border border-[var(--border)] bg-[var(--surface)] p-5">
+          <h3 className="text-sm font-semibold text-[var(--foreground)]">Customize analytics</h3>
+          <p className="mt-2 text-sm leading-6 text-[var(--body)]">
+            Choose which metrics, breakdowns, and AI coach prompts appear here. This is a
+            placeholder for making the analytics view personal to the way you review trades.
+          </p>
+        </div>
+      </details>
       <div className="grid items-stretch gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="flex h-full flex-col">
           <h3 className="mb-4 font-mono text-xs font-semibold uppercase tracking-[0.3em] text-[var(--muted)]">

@@ -3,7 +3,8 @@
 > A reverse-engineering of a public trader's daily review reports (an anonymized
 > reference journal). The point is **not** to
 > copy the trader's strategy, tickers, or specific rules — it is to learn *how
-> the data is analyzed* so our AI coach (see `TRADING_COACH.md`) can produce
+> the data is analyzed* so our AI coach (see
+> [`TRADING_COACH.md`](../coach/TRADING_COACH.md)) can produce
 > reviews of comparable rigor. Read this as "what a strong daily recap computes
 > and why," not as trading advice.
 
@@ -25,7 +26,8 @@ day regardless of outcome.
 
 Takeaway for our build: ship the narrative recap first (it is useful and cheap),
 then layer the quantitative engine on top once the data pipeline supports it.
-Our `TRADING_COACH.md` already plans this with Daily → Pattern → Process phases.
+Our [`TRADING_COACH.md`](../coach/TRADING_COACH.md) already plans this with
+Daily → Pattern → Process phases.
 
 ### Longitudinal timeline (sampled Nov 2025 – Jun 2026)
 
@@ -61,8 +63,9 @@ even as winners grew, consistent with disciplined fixed per-trade risk.
 
 ### Monthly aggregates (full archive, 144 days)
 
-The complete dataset is captured in `research-report-study-daily.csv` (one row
-per published report, Nov 17 2025 – Jun 17 2026). Rolled up by month:
+The complete dataset is captured in
+[`research-report-study-daily.csv`](reference-data/research-report-study-daily.csv)
+(one row per published report, Nov 17 2025 – Jun 17 2026). Rolled up by month:
 
 | Month | Days | Net P&L* | Avg trades/day | Era |
 | --- | --- | --- | --- | --- |
@@ -261,7 +264,7 @@ Our coach should **close that loop**: persist each "one thing to try," then on
 later days check whether the trader actually followed it and whether it helped.
 That recommendation-tracking is a feature the reference reports lack and a clear
 place for us to add value. It fits the Pattern/Process phases in
-`TRADING_COACH.md`.
+[`TRADING_COACH.md`](../coach/TRADING_COACH.md).
 
 ## Design principles from observed data (operator's thesis)
 
@@ -309,18 +312,20 @@ than assuming the answer.
 
 ## Mapping to our existing plans
 
-> The rules **derived** from this study live in `STATISTICAL_REVIEW.md` (the
-> coach's statistical layer). This doc is the evidence base; that doc is the
-> framework we adopt.
+> The rules **derived** from this study live in
+> [`STATISTICAL_REVIEW.md`](STATISTICAL_REVIEW.md) (the coach's statistical
+> layer). This doc is the evidence base; that doc is the framework we adopt.
 
 - The **Trim Review** and "outlier review / concentration review" already listed
-  under *Example Analysis Ideas* in `TRADING_COACH.md` are the same tool — this
-  doc specifies the exact computation.
-- **Significance math** extends the Reports metrics in `FEATURES.md` (expectancy,
-  R-multiple stats) with breakeven WR + a variance test.
+  under *Example Analysis Ideas* in
+  [`TRADING_COACH.md`](../coach/TRADING_COACH.md) are the same tool — this doc
+  specifies the exact computation.
+- **Significance math** extends the Reports metrics in
+  [`FEATURES.md`](../product/FEATURES.md) (expectancy, R-multiple stats) with
+  breakeven WR + a variance test.
 - **Time-of-day and price/volume bucket** breakdowns are already on the
-  `FEATURES.md` roadmap (§6, marked 🔜) — this is the analytical payload they
-  should feed.
+  [`FEATURES.md`](../product/FEATURES.md) roadmap (§6, marked 🔜) — this is the
+  analytical payload they should feed.
 
 ## Source
 

@@ -1,7 +1,7 @@
 /**
  * Massive (Polygon-platform) candle provider. Fetches 1-minute aggregate bars
  * for a symbol on a single market date. Key is read server-side from the env
- * (never exposed to the client). See docs/DESIGN.md §9.
+ * (never exposed to the client). See docs/product/PRODUCT_SPEC.md §9.
  */
 const BASE = "https://api.massive.com";
 

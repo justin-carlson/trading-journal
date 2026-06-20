@@ -124,8 +124,9 @@ Five `*mock*` pages plus `/trades/lightweight-prototype` live under `src/app/`:
 ### 4. Repo bloat from design artifacts
 `samples/Journal Design/` contains **four ~1.4 MB HTML files** (vendored React dev builds)
 plus several 100 KB+ prototype HTML files — roughly **6 MB** of committed
-binaries-as-text that every clone now carries (`docs/prototypes/trade_chart (10)-prototype.html`,
-`DESIGN_SYSTEM_ONE_SHEET.html`, etc.).
+binaries-as-text that every clone now carries
+(`docs/design/prototypes/trade_chart (10)-prototype.html`,
+`docs/design/DESIGN_SYSTEM_ONE_SHEET.html`, etc.).
 
 - **Recommendation:** prune, or move to a separate branch / release asset / design repo.
 - **Note (good):** the `.db` files *are* correctly gitignored and not tracked.

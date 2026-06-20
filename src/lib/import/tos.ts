@@ -2,7 +2,7 @@
  * ThinkorSwim Account Statement parser.
  *
  * Slices the `Account Trade History` section into fill-level executions.
- * (See docs/DESIGN.md §8 for the format spec.) Fees live in the `Cash Balance`
+ * (See docs/product/PRODUCT_SPEC.md §8 for the format spec.) Fees live in the `Cash Balance`
  * section and are joined here when available; otherwise default to 0.
  */
 import { createHash } from "node:crypto";

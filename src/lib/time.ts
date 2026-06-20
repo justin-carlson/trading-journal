@@ -3,7 +3,7 @@
  *
  * TOS `Exec Time` is wall-clock **Pacific** (America/Los_Angeles). We convert it
  * to a UTC epoch for storage; market-session / display conversion to Eastern is
- * done separately. See docs/DESIGN.md §9 (Timezone).
+ * done separately. See docs/product/PRODUCT_SPEC.md §9 (Timezone).
  */
 
 export const SOURCE_TZ = "America/Los_Angeles"; // TOS export wall-clock zone

@@ -14,7 +14,7 @@ export function sectionLabelForHref(href: string | undefined): string {
   if (href === "/" || href.startsWith("/journal")) return "Journal";
   if (href.startsWith("/trades")) return "Trades";
   if (href.startsWith("/calendar")) return "Calendar";
-  if (href.startsWith("/reports")) return "Reports";
+  if (href.startsWith("/reports")) return "Analytics";
   if (href.startsWith("/settings")) return "Settings";
   return "Back";
 }

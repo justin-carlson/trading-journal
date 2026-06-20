@@ -2,7 +2,7 @@
  * Drizzle schema for the trading journal (SQLite).
  *
  * Source of truth = `executions` (raw fills). A `trade` is a derived round-trip
- * grouping of executions (see docs/DESIGN.md §5). Market timestamps (`executedAt`,
+ * grouping of executions (see docs/product/PRODUCT_SPEC.md §5). Market timestamps (`executedAt`,
  * `entryAt`, `exitAt`, candle `t`) are stored as **epoch seconds** to align with
  * the chart prototype; `createdAt`/`updatedAt` use Drizzle timestamp mode.
  */
@@ -143,7 +143,7 @@ export const tradeTags = sqliteTable(
 /**
  * Reflective journal note. Scoped: a `trade` note attaches to a trade; `day` /
  * `week` / `month` notes stand alone (tradeId null) keyed by `scopeKey`
- * (YYYY-MM-DD, week-start date, or YYYY-MM). See docs/JOURNAL_DESIGN.md §2/§9.
+ * (YYYY-MM-DD, week-start date, or YYYY-MM). See docs/design/JOURNAL_DESIGN.md §2/§9.
  */
 export const journalEntries = sqliteTable(
   "journal_entries",

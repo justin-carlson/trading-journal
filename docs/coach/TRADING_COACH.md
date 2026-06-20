@@ -460,7 +460,7 @@ These should be presented as review insights, not trading predictions.
 
 > The mathematical/statistical rules behind these analysis ideas (expectancy,
 > trim/significance tests, risk math, regime-aware frequency) live in their own
-> pillar: `STATISTICAL_REVIEW.md`.
+> pillar: [`STATISTICAL_REVIEW.md`](../analytics/STATISTICAL_REVIEW.md).
 
 ## Data Discovery And Blind Spots
 
@@ -531,7 +531,7 @@ The user supplied a draft prompt artifact, `fyl_trade_review_coach.md`, for a
 future AI trade review feature. Capture it as the first concrete coaching prompt
 direction.
 
-Full source prompt: `docs/prompts/fyl_trade_review_coach.md`.
+Full source prompt: `docs/coach/prompts/fyl_trade_review_coach.md`.
 
 Intent:
 

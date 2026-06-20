@@ -8,7 +8,8 @@ This pillar is intentionally separate from:
 - `EXECUTION.md` *(planned)* — *when/how* to pull the trigger (mechanical entry /
   exit / sizing rules). Setups say "this is an ABCD"; execution says "enter on the
   break of the pullback high with a stop under the low."
-- `STATISTICAL_REVIEW.md` — the *math* layer that evaluates outcomes across trades.
+- [`STATISTICAL_REVIEW.md`](../analytics/STATISTICAL_REVIEW.md) — the *math*
+  layer that evaluates outcomes across trades.
 
 **How this feeds the coach.** Every trade carries a setup tag. The coach reviews
 each trade against its setup's criteria (was this a *valid* instance? was the
@@ -36,7 +37,8 @@ setup is a flag.
 ## Per-setup template
 
 Copy this block for each new setup. Fields mirror the "Approved Setups" list in
-`TRADING_COACH.md` so the coach reads every setup the same way.
+[`TRADING_COACH.md`](TRADING_COACH.md) so the coach reads every setup the same
+way.
 
 ```markdown
 ## <Setup Name>
@@ -103,6 +105,7 @@ Copy this block for each new setup. Fields mirror the "Approved Setups" list in
 ## Relationship to other docs
 
 - `EXECUTION.md` *(planned)* — the mechanical entry/exit/sizing rules for these setups.
-- `STATISTICAL_REVIEW.md` — evaluates performance **by setup** across trades.
-- `TRADING_COACH.md` — the overall coach; its "Approved Setups" section defines
-  these fields and the playbook intent.
+- [`STATISTICAL_REVIEW.md`](../analytics/STATISTICAL_REVIEW.md) — evaluates
+  performance **by setup** across trades.
+- [`TRADING_COACH.md`](TRADING_COACH.md) — the overall coach; its "Approved
+  Setups" section defines these fields and the playbook intent.

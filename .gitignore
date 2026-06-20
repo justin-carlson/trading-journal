@@ -5,6 +5,7 @@ node_modules/
 .next/
 out/
 build/
+tsconfig.tsbuildinfo
 
 # Local data (private — never commit)
 data/journal.db

@@ -159,6 +159,20 @@ a SQLite database file on disk.
 If the browser does not open automatically, go to the localhost URL printed in
 the terminal, usually [http://localhost:3000](http://localhost:3000).
 
+If Next.js says another dev server is already running, or localhost feels stuck,
+use the repo-local cleanup command:
+
+```bash
+npm run dev:restart
+```
+
+That stops any Next dev server running from this project folder and starts a
+fresh one. To only stop the stuck server, run:
+
+```bash
+npm run dev:stop
+```
+
 ## Hosted Demo
 
 The hosted demo is a quick way to click through the app before installing it:

@@ -897,6 +897,12 @@ export default async function TradeJournalReview({
           enableWeekScrollSpy={preset === "month"}
         />
         <div className="mt-8 min-w-0 space-y-8">
+          <header>
+            <h1 className="text-4xl font-semibold leading-none tracking-[-0.03em] text-[var(--foreground)]">
+              Journal
+            </h1>
+          </header>
+
           {preset === "week" ? (
             <ScopeHeader>
               <WeekHeader label={range.title} displayDate={range.displayDate} />
