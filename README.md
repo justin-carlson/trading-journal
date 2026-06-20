@@ -35,15 +35,6 @@ The next product layer is the AI coach: a post-trade review assistant that can
 read your notes, trades, chart context, tags, and playbook, then help summarize
 what worked, what did not, what can improve, and what to focus on next.
 
-## Try The Hosted Demo
-
-The hosted demo is for clicking around with sample data:
-
-[trading-journal.ai/demo](https://trading-journal.ai/demo)
-
-The app itself is designed to run locally. Your real broker exports, journal
-notes, API keys, and local database stay on your machine.
-
 ## Data Importer
 
 Trading Journal reads broker CSV exports and turns fills into a shared execution
@@ -167,6 +158,17 @@ a SQLite database file on disk.
 
 If the browser does not open automatically, go to the localhost URL printed in
 the terminal, usually [http://localhost:3000](http://localhost:3000).
+
+## Hosted Demo
+
+The hosted demo is a quick way to click through the app before installing it:
+
+[trading-journal.ai/demo](https://trading-journal.ai/demo)
+
+It uses the same demo trades and placeholder journal notes that local demo mode
+imports from this repo. The hosted version is for previewing the workflow; the
+app itself is designed to run locally with your own broker exports, notes, API
+keys, and SQLite database on your machine.
 
 ## Data & Privacy
 
