@@ -458,6 +458,10 @@ The coach could eventually support:
 
 These should be presented as review insights, not trading predictions.
 
+> The mathematical/statistical rules behind these analysis ideas (expectancy,
+> trim/significance tests, risk math, regime-aware frequency) live in their own
+> pillar: `STATISTICAL_REVIEW.md`.
+
 ## Data Discovery And Blind Spots
 
 One of the most valuable roles for the coach is finding things the trader may

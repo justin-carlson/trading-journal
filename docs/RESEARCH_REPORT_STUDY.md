@@ -309,6 +309,10 @@ than assuming the answer.
 
 ## Mapping to our existing plans
 
+> The rules **derived** from this study live in `STATISTICAL_REVIEW.md` (the
+> coach's statistical layer). This doc is the evidence base; that doc is the
+> framework we adopt.
+
 - The **Trim Review** and "outlier review / concentration review" already listed
   under *Example Analysis Ideas* in `TRADING_COACH.md` are the same tool — this
   doc specifies the exact computation.
