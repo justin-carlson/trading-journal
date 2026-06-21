@@ -56,3 +56,147 @@ body {
     transform: scaleX(1);
   }
 }
+
+/* Landing-page learning loop motion. */
+.tj-loop-dots {
+  fill: none;
+  stroke: var(--green);
+  stroke-width: 3.25;
+  stroke-linecap: round;
+  stroke-dasharray: 0.01 28;
+  opacity: 0.5;
+}
+
+.tj-loop-grain {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.18);
+  stroke-width: 1;
+  stroke-dasharray: 1 13;
+  opacity: 0.22;
+}
+
+.tj-loop-dashes {
+  fill: none;
+  stroke: var(--green);
+  stroke-width: 1.35;
+  stroke-linecap: round;
+  stroke-dasharray: 4 6;
+  opacity: 0.26;
+}
+
+.tj-loop-flow {
+  fill: none;
+  stroke: color-mix(in srgb, var(--green) 80%, white 20%);
+  stroke-width: 3.3;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tj-loop-dots,
+  .tj-loop-grain,
+  .tj-loop-dashes {
+    transform-box: view-box;
+    transform-origin: 540px 310px;
+  }
+
+  .tj-loop-dots {
+    animation: tj-loop-spin 180s linear infinite;
+  }
+
+  .tj-loop-grain {
+    animation: tj-loop-spin 72s linear infinite reverse;
+  }
+
+  .tj-loop-dashes {
+    animation: tj-loop-dash 18s linear infinite;
+  }
+
+  .tj-loop-flow-1 {
+    animation: tj-loop-flow-1 25s ease-in-out infinite;
+  }
+
+  .tj-loop-flow-2 {
+    animation: tj-loop-flow-2 25s ease-in-out infinite;
+  }
+
+  .tj-loop-flow-3 {
+    animation: tj-loop-flow-3 25s ease-in-out infinite;
+  }
+}
+
+@keyframes tj-loop-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes tj-loop-dash {
+  to {
+    stroke-dashoffset: -216;
+  }
+}
+
+@keyframes tj-loop-flow-1 {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  3% {
+    opacity: 0.82;
+  }
+  18%,
+  27% {
+    stroke-dashoffset: 0;
+    opacity: 0.82;
+  }
+  33%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes tj-loop-flow-2 {
+  0%,
+  38% {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  41% {
+    opacity: 0.82;
+  }
+  56%,
+  65% {
+    stroke-dashoffset: 0;
+    opacity: 0.82;
+  }
+  71%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes tj-loop-flow-3 {
+  0%,
+  76% {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  79% {
+    opacity: 0.82;
+  }
+  94%,
+  98% {
+    stroke-dashoffset: 0;
+    opacity: 0.82;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}

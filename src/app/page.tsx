@@ -60,6 +60,7 @@ export default function LandingPage() {
         <Hero />
         <ReviewHabit />
         <CoachSection />
+        <LearningLoopSection />
         <LocalFirstSection />
         <GetStartedSection />
       </main>
@@ -342,6 +343,220 @@ function CoachSection() {
         <CoachCard />
       </div>
     </section>
+  );
+}
+
+function LearningLoopSection() {
+  const surfaces = [
+    {
+      verb: "Captures the record",
+      title: "Journal",
+      body: "The day's story: trades, recap, emotions, process notes, check-ins, charts, and the human context behind each decision.",
+      forward: "Recap context, unresolved patterns, and carry-forward items into coach review.",
+    },
+    {
+      verb: "Synthesizes",
+      title: "Coach",
+      body: "Reads journal context against trade evidence to say what worked, what broke, what mattered, and what to try next.",
+      forward: "A current experiment, focus, or risk cue into carry-forward.",
+    },
+    {
+      verb: "Prompts & reminds",
+      title: "Dashboard",
+      body: "Brings the lesson into the next session with plans, resets, market reads, emotional check-ins, and rule reminders.",
+      forward: "Timestamped check-ins back into the daily recap; the next trading plan.",
+    },
+  ];
+
+  return (
+    <section id="learning-loop" className="scroll-mt-24 border-t border-[var(--hairline)]">
+      <div className="mx-auto w-full max-w-[1200px] px-6 py-24 md:px-8">
+        <div className="max-w-[760px]">
+          <SectionEyebrow className="text-[var(--green)]">The learning loop</SectionEyebrow>
+          <h2 className="mt-[18px] max-w-[760px] text-balance text-[32px] font-semibold leading-[1.08] tracking-[-0.025em] md:text-[40px]">
+            Lessons shouldn&apos;t disappear into archived notes.
+          </h2>
+          <p className="mt-[22px] max-w-[720px] text-pretty text-[17px] leading-[1.62] text-[var(--prose,#99a3b1)]">
+            Trading days are full of small moments that are easy to lose: the
+            hesitation before an entry, the rule you bent, the cue that helped you stop.
+            The journal keeps those moments with the story of the day. The coach turns
+            them into a focused lesson, and the dashboard brings that lesson back into
+            the next session while capturing the next round of check-ins.
+          </p>
+        </div>
+
+        <div className="relative mt-14 overflow-hidden px-4 pb-0 pt-8 sm:px-6 lg:px-8">
+          <div
+            aria-hidden="true"
+            className="absolute left-1/2 top-[72px] h-[760px] w-[930px] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(29,178,107,.055)_0%,rgba(29,178,107,.04)_38%,rgba(16,22,24,.026)_62%,transparent_82%)] blur-[18px]"
+          />
+          <div className="relative mx-auto hidden h-[900px] max-w-[1080px] lg:block">
+            <svg className="absolute inset-0 h-[720px] w-full overflow-visible" viewBox="0 0 1080 680" aria-hidden="true">
+              <defs>
+                <filter id="landing-loop-soft-glow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="1.35" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              <g className="tj-loop-orbit" style={{ transformOrigin: "540px 310px" }}>
+                <circle className="tj-loop-dots" cx="540" cy="310" r="160" />
+                <circle className="tj-loop-grain" cx="540" cy="310" r="201" />
+                <circle className="tj-loop-dashes" cx="540" cy="310" r="146" />
+              </g>
+              <circle cx="540" cy="310" r="204" fill="none" stroke="var(--hairline)" strokeWidth="1.5" strokeDasharray="2 7" />
+              <g fill="none" strokeLinecap="round">
+                <path d="M468.2,507.3 A210 210 0 0 1 345.3,231.3" stroke="var(--green)" strokeWidth="2.5" opacity=".34" />
+                <path d="M358.1,205 A210 210 0 0 1 741.9,252.1" stroke="var(--green)" strokeWidth="2.5" opacity=".34" />
+                <path d="M748,280.8 A210 210 0 0 1 503.5,516.8" stroke="var(--green)" strokeWidth="2.5" opacity=".34" />
+              </g>
+              <g filter="url(#landing-loop-soft-glow)">
+                <path className="tj-loop-flow tj-loop-flow-1" pathLength="1" d="M468.2,507.3 A210 210 0 0 1 345.3,231.3" />
+                <path className="tj-loop-flow tj-loop-flow-2" pathLength="1" d="M358.1,205 A210 210 0 0 1 741.9,252.1" />
+                <path className="tj-loop-flow tj-loop-flow-3" pathLength="1" d="M748,280.8 A210 210 0 0 1 503.5,516.8" />
+              </g>
+              <LoopNode x={358.1} y={205} label="01" />
+              <LoopNode x={748} y={280.8} label="02" />
+              <LoopNode x={468.2} y={507.3} label="03" />
+            </svg>
+
+            <div className="absolute left-[390px] top-[290px] w-[300px] text-center">
+              <h3 className="text-[28px] font-semibold leading-[1.15] tracking-[-0.02em]">
+                Trading Journal
+                <br />
+                Learning Loop
+              </h3>
+            </div>
+
+            <LoopDiagramCard
+              number="01"
+              label="Journal"
+              title="Daily recap"
+              body="The day&apos;s story: trades, check-ins, emotions, process notes, charts, and market context."
+              className="left-6 top-[42px]"
+            />
+            <LoopDiagramCard
+              number="02"
+              label="Coach"
+              title="Feedback"
+              body="Synthesizes what worked, what broke, and what to try next from journal context and trade evidence."
+              className="left-[792px] top-[94px]"
+            />
+            <LoopDiagramCard
+              number="03"
+              label="Dashboard"
+              title="Check-ins + reminders"
+              body="Prompts the moment: plan, market read, behavior, emotion. Resurfaces the active lesson and next-session cue."
+              className="left-[306px] top-[584px]"
+            />
+          </div>
+
+          <div className="relative lg:hidden">
+            <div className="mx-auto grid h-[320px] max-w-[360px] place-items-center rounded-full border border-[var(--hairline)] bg-[radial-gradient(circle,rgba(29,178,107,.08),transparent_68%)]">
+              <div className="rounded-full border border-[var(--border)] px-8 py-7 text-center">
+                <h3 className="text-[25px] font-semibold leading-[1.12] tracking-[-0.02em]">
+                  Trading Journal
+                  <br />
+                  Learning Loop
+                </h3>
+              </div>
+            </div>
+            <div className="mt-7 grid gap-4">
+              <LoopDiagramCard number="01" label="Journal" title="Daily recap" body="The day&apos;s story, check-ins, trades, and context." />
+              <LoopDiagramCard number="02" label="Coach" title="Feedback" body="Turns journal context and trade evidence into a focused lesson." />
+              <LoopDiagramCard number="03" label="Dashboard" title="Check-ins + reminders" body="Brings the lesson into the next session and captures the next check-ins." />
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-9">
+          <SectionEyebrow className="text-[var(--green)]">Surface responsibilities</SectionEyebrow>
+          <h3 className="mt-[18px] text-balance text-[28px] font-semibold leading-[1.12] tracking-[-0.02em] md:text-[34px]">
+            Three surfaces, one job each
+          </h3>
+          <p className="mt-[18px] max-w-[720px] text-pretty text-[16.5px] leading-[1.62] text-[var(--prose,#99a3b1)]">
+            The journal keeps the story of the day. The coach turns that story into a
+            focused lesson. The dashboard carries the lesson into the next session,
+            then captures the check-ins that start the loop again.
+          </p>
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {surfaces.map((surface) => (
+              <article key={surface.title} className="flex min-h-[250px] flex-col rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
+                <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--green)]">
+                  {surface.verb}
+                </span>
+                <h4 className="mt-2.5 text-xl font-semibold">{surface.title}</h4>
+                <p className="mt-3 text-[13.5px] leading-[1.58] text-[var(--prose,#99a3b1)]">
+                  {surface.body}
+                </p>
+                <div className="mt-auto pt-5">
+                  <p className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-[var(--muted)]">Sends forward</p>
+                  <p className="mt-2 flex gap-2 text-[13px] leading-[1.5] text-[var(--body)]">
+                    <span className="text-[var(--green)]">→</span>
+                    <span>{surface.forward}</span>
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function LoopNode({ x, y, label }: { x: number; y: number; label: string }) {
+  return (
+    <g>
+      <circle cx={x} cy={y} r="13" fill="var(--surface)" stroke="var(--green)" strokeWidth="1.6" />
+      <text
+        x={x}
+        y={y + 1}
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fill="var(--green)"
+        fontFamily="var(--font-geist-mono), ui-monospace, monospace"
+        fontSize="8.5"
+        fontWeight="700"
+      >
+        {label}
+      </text>
+    </g>
+  );
+}
+
+function LoopDiagramCard({
+  number,
+  label,
+  title,
+  body,
+  className = "",
+}: {
+  number: string;
+  label: string;
+  title: string;
+  body: string;
+  className?: string;
+}) {
+  return (
+    <article className={`${className} rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[0_22px_54px_-26px_rgba(0,0,0,.8)] lg:absolute lg:w-[268px]`}>
+      <div className="flex items-center gap-3">
+        <span className="grid size-[34px] shrink-0 place-items-center rounded-full border border-[rgba(29,178,107,.55)] font-mono text-[13px] font-semibold text-[var(--green)]">
+          {number}
+        </span>
+        <span className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--muted)]">
+          {label}
+        </span>
+      </div>
+      <h4 className="mt-[17px] text-[22px] font-semibold leading-tight tracking-[-0.015em]">
+        {title}
+      </h4>
+      <p className="mt-3 text-[13.5px] leading-[1.6] text-[var(--prose,#99a3b1)]">
+        {body}
+      </p>
+    </article>
   );
 }
 
