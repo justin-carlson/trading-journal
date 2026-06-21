@@ -71,18 +71,20 @@ export default function DashboardReviewPage() {
             Design review
           </span>
           <span style={{ fontSize: 17, fontWeight: 700, color: "#f1f4f8" }}>
-            Dashboard — Claude Design variations
+            Dashboard design variations
           </span>
         </div>
 
         <div
           style={{
             display: "inline-flex",
-            border: "1px solid #242a35",
-            borderRadius: 9,
-            padding: 3,
-            gap: 3,
-            background: "#0b0d12",
+            border: "1px solid rgba(255,255,255,.1)",
+            borderRadius: 10,
+            padding: 4,
+            gap: 4,
+            background: "#11151d",
+            boxShadow:
+              "inset 0 1px 0 rgba(255,255,255,.04), 0 14px 34px -24px rgba(0,0,0,.9)",
           }}
         >
           {VARIATIONS.map((v) => {
@@ -94,14 +96,19 @@ export default function DashboardReviewPage() {
                 style={{
                   cursor: "pointer",
                   border: "none",
-                  padding: "8px 16px",
-                  borderRadius: 6,
+                  padding: "9px 17px",
+                  borderRadius: 7,
                   fontSize: 13,
-                  fontWeight: 600,
+                  fontWeight: 700,
                   whiteSpace: "nowrap",
-                  color: on ? "#f1f4f8" : "#6e7886",
-                  background: on ? "#191d27" : "transparent",
-                  transition: "color .15s, background .15s",
+                  color: on ? "#f1f4f8" : "#99a3b1",
+                  background: on
+                    ? "linear-gradient(180deg, rgba(29,178,107,.22), rgba(25,29,39,.96))"
+                    : "rgba(255,255,255,.03)",
+                  boxShadow: on
+                    ? "0 0 0 1px rgba(29,178,107,.42), 0 10px 26px -18px rgba(29,178,107,.7)"
+                    : "inset 0 0 0 1px rgba(255,255,255,.045)",
+                  transition: "color .15s, background .15s, box-shadow .15s",
                 }}
               >
                 {v.label}
@@ -123,12 +130,14 @@ export default function DashboardReviewPage() {
             height: 36,
             padding: "0 15px",
             borderRadius: 8,
-            border: "1px solid #242a35",
+            border: "1px solid rgba(77,155,255,.35)",
+            background: "rgba(77,155,255,.08)",
             fontSize: 13,
-            fontWeight: 600,
-            color: "#c0c8d4",
+            fontWeight: 700,
+            color: "#d7e7ff",
             textDecoration: "none",
             whiteSpace: "nowrap",
+            boxShadow: "0 12px 30px -24px rgba(77,155,255,.75)",
           }}
         >
           Open fullscreen ↗
