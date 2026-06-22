@@ -124,19 +124,24 @@
 ## 8. Dashboard  *(screenshot 4)*
 - 🔜 **Deferred for MVP** — Reports + Calendar cover the home-screen need for now.
   When built, do **not** make it a generic widget wall. Reframe it as the
-  trader's orientation surface: account pulse, next-session focus, current
-  experiment, and market context.
+  active-day surface for planning, accountability, and check-ins: account pulse,
+  current plan, market read, risk posture, notes, and visible plan
+  accountability. See `docs/product/DASHBOARD_CONCEPT.md` for the component map
+  and `docs/product/TRADING_JOURNAL_LEARNING_LOOP.md` for the broader product
+  loop.
 - 🔜 **Pre-session / next-session brief:** one focus item, active experiment,
   risk guardrail, and link to the latest coach review.
 - 🔜 **Time-aware check-in modes:** pre-market, opening bell, midday/lunch,
   power hour, after-hours, and hot-all-day exception mode. Each mode changes
   dashboard emphasis and can act as a manual reorientation checkpoint.
 - 🔜 **One-button reorientation checkpoint:** future workflow to import latest
-  fills/scanner context, refresh account pulse, and show a short coach note:
-  keep trading, risk down, stop, or step back.
-- 🔜 **Market context snapshot:** market condition, active themes, top gainers,
-  stocks up 100%+, notable catalysts, and notes on whether the market was hot,
-  thin, choppy, or theme-driven.
+  fills, refresh account pulse, and show a short coach note: keep trading, risk
+  down, stop, or step back.
+- 🔜 **Market context snapshot:** market condition, active themes, opportunity
+  quality, and notes on whether the market was hot, thin, choppy, or
+  theme-driven. Keep this as a read of the tape, not a full stock review.
+- 🔜 **Sticky-note accountability cues:** visible reminders for the active rule,
+  current focus, risk posture, and the trader's stated plan.
 - 🔜 **Focus reset prompts:** lightweight coach nudges to step back from tunnel
   vision, prevent overtrading, and decide whether the tape calls for risk up,
   risk down, stop trading, or a brief context check.
@@ -146,12 +151,9 @@
 - 🔜 **Timed coaching prompts:** optional reminders around natural market
   moments, such as 15 minutes before the open, 90 minutes after the open, midday,
   and post-market. These are sounding-board prompts, not oracle calls.
-- 🔜 **Top gainers opportunity review:** document the day's best movers even if
-  they were not traded. Track whether each was captured, missed, poorly traded,
-  intentionally avoided, or a false opportunity.
-- 🔜 **5 Pillars of Stock Selection tracking:** price range ($1-$20), float
-  (<10M), relative volume (≥5x), daily percentage change (≥10%), and news
-  catalyst. Start manual; automate scanner/enrichment data later.
+- 🔜 **Daily recap handoff:** dashboard can prompt the user to review the day's
+  best movers, but the detailed top-stocks and 5 Pillars of Stock Selection
+  tracking belong in the daily recap so they can feed the AI coach.
 - 🔜 **Edit Layout** / customizable widget grid; 30/60/90-day range; more widgets.
 - ⛔ Fully automated scanner widgets, market breadth, ATR/RVOL/opening gap, and
   day-type feeds until provider/data reliability is decided.

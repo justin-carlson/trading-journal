@@ -302,12 +302,16 @@ Recommended dashboard sections:
   item, link to last coach review.
 - **Account pulse**: recent P&L, drawdown, win rate, profit factor, trade count,
   open trades if supported.
-- **Market context**: market condition, active themes, top gainers, stocks up
-  100%+, unusual volume, notable catalysts.
-- **Watchlist / candidates**: symbols that meet the user's stock-selection
-  criteria, with reasons.
+- **Time-aware check-in**: pre-market, open, midday, power hour, after-hours, or
+  post-session mode with one prompt for the moment.
+- **Market context**: market condition, active themes, and opportunity quality.
+  This is a read of the tape, not a detailed stock review.
+- **Sticky-note accountability**: visible plan cues from the latest journal
+  reflection, coach feedback, or manual pre-market note.
 - **Recent review loop**: yesterday's verdict, whether the experiment was
   followed, and what changed.
+- **Daily recap handoff**: prompt the user to review top stocks and five-pillar
+  fit in the daily recap, where it becomes coach input.
 
 ### Time-Aware Check-In Modes
 
@@ -320,19 +324,19 @@ Suggested check-in modes:
 
 | Mode | Primary job |
 | --- | --- |
-| Pre-market | Plan the day: early movers, top gainers, catalysts, active themes, A+ candidates, and one rule to carry in. |
-| Opening bell | Track A+ candidates, first clean setups, spread/liquidity quality, and chase risk. |
+| Pre-market | Call the tape, name active themes, choose the first rule, and set sticky cues for the open. |
+| Opening bell | Keep the plan visible, monitor setup quality, spread/liquidity quality, and chase risk. |
 | Midday / lunch | Reorient after early trades: import latest fills, check churn, and decide whether continued trading is justified. |
 | Power hour | Re-check continuation, squeezes, fades, second-leg moves, active themes, and risk posture. |
-| After hours | Capture late movers, earnings/news catalysts, and names that may shape tomorrow's pre-market plan. |
+| After hours | Note market context and carry-forward themes; detailed mover review belongs in daily recap. |
 | Hot all day | Mark exception days where stocks keep moving across multiple windows. |
 
 For each mode, capture:
 
 - Market read: hot, slow, choppy, thin, theme-driven.
-- Best movers in that window.
-- Traded names.
-- Missed opportunities.
+- Active themes and whether opportunity quality is improving or fading.
+- Current plan/risk cue.
+- What the trader is seeing and feeling.
 - Reason to stay active or stand down.
 - Notes for the next review.
 
@@ -341,9 +345,10 @@ trading-day assistant. The ideal future interaction is a single import/refresh
 button inside the current mode:
 
 1. Import latest fills.
-2. Optionally import or paste latest scanner/top-gainer data.
-3. Recompute account pulse, trade count, realized P&L, and current risk context.
-4. Show a short coach note: keep trading, risk down, stop, or step back.
+2. Recompute account pulse, trade count, realized P&L, and current risk context.
+3. Show a short coach note: keep trading, risk down, stop, or step back.
+4. Offer a daily recap handoff for top stocks, five-pillar fit, missed
+   opportunities, and selection review.
 
 Until direct broker/scanner integrations exist, this can start as a manual
 checkpoint that reminds the trader to upload/export current data and reassess.
@@ -369,7 +374,7 @@ Useful reset prompts:
 
 | Prompt | When it appears | Intended action |
 | --- | --- | --- |
-| Risk up | Market is hot, A+ names are holding, spreads are workable, and top gainers are extending. | Consider whether planned risk is too conservative. |
+| Risk up | Market is hot, quality names are holding, spreads are workable, and opportunity quality is improving. | Consider whether planned risk is too conservative. |
 | Risk down | Spikes are failing, names are rolling over, volume is fading, or losses are clustering. | Reduce size, trade count, or new attempts. |
 | Stop trading | No A+ candidates, repeated failed breakouts, revenge entries, or rule drift. | Stand down until a better window. |
 | Step back | User is deep in a window, trade count is rising, or context has changed. | Ask: what is the market doing, what am I doing, and do those still match? |
@@ -406,11 +411,16 @@ This is where the "go home green on a cold day" style of coaching belongs. The
 prompt is small, but the behavioral value can be large because it interrupts the
 solo chase and creates a moment of accountability.
 
-### Top Gainers As Opportunity Review
+### Daily Recap Owns Opportunity Review
 
 Top gainers should be captured even when the trader did not trade them. They are
 the day's visible opportunity set, and reviewing them creates learning material
 beyond the user's executed trades.
+
+This should live in the daily recap, not the dashboard. The dashboard may prompt
+the user to complete this review, but it should not become the place where every
+mover is classified and scored. Keeping it in the recap makes the context part
+of the reflection record and gives the coach a cleaner input.
 
 For each notable top gainer, capture:
 
@@ -445,7 +455,7 @@ to the best names may mean the trader left quality on the table. A red day spent
 trading lower-quality names while A+ names were available points to selection
 discipline rather than execution alone.
 
-The first version can be manual in the Journal/Dashboard. Automation can come
+The first version can be manual in the Journal daily recap. Automation can come
 later through scanner imports or market data enrichment.
 
 The market-context piece should not be mixed into the statistical review as if
@@ -460,9 +470,11 @@ analysis answer better questions, such as:
 
 ### Five Pillars Of Stock Selection
 
-The user's five-pillar framework is a strong candidate for the Dashboard and
-Journal day snapshot. It describes the quality of the opportunity set before a
-trade, while analytics describes what happened after trading.
+The user's five-pillar framework is a strong candidate for the Journal daily
+recap and later trade/candidate review. It describes the quality of the
+opportunity set before a trade, while analytics describes what happened after
+trading. Dashboard should only summarize the read, such as "quality improving"
+or "no clean A+ names," rather than storing pillar-by-pillar detail.
 
 | Pillar | Default rule | Product use |
 | --- | --- | --- |
@@ -480,10 +492,12 @@ Possible candidate states:
 
 This framework can support three product moments:
 
-1. **Pre-session**: orient to today's best candidates and active themes.
+1. **Dashboard check-in**: orient to market quality, active themes, and risk
+   posture without turning the dashboard into a scanner.
 2. **During/after import**: annotate trades with the candidate quality they came
    from.
-3. **Review**: compare performance on A+ candidates vs lower-quality trades.
+3. **Daily recap review**: compare the day's top stocks, five-pillar fit,
+   actual participation, missed opportunities, and trade selection.
 
 ### Data Capture Strategy
 
@@ -561,7 +575,7 @@ they should become first-class product features.
 | MAE/MFE | Did trades move against/for me before exit? | Needs candle/execution logic | Useful, but easy to miscompute. |
 | Rule adherence | Did I follow my process? | Needs structured review fields | Can combine journal fields, tags, and setup taxonomy. |
 | Market regime | Does frequency work only in certain tapes? | Needs market data or manual regime tag | Start manual before deriving. |
-| Market context dashboard | What kind of opportunity set existed today? | Start manual; automate later | Themes, top gainers, stocks up 100%+, catalyst notes, 5-pillar candidates. |
+| Market context snapshot | What kind of opportunity set existed today? | Start manual; automate later | Dashboard captures condition/themes/quality; daily recap captures top stocks, catalysts, and five-pillar fit. |
 | Significance and bootstrap | Is this finding persistent? | Needs enough history | Belongs in the deterministic review engine. |
 | Counterfactuals | What would a rule have saved? | Needs rule definitions | Example: cap cheap-bucket trades, daily stop, no re-entry. |
 | Recommendation tracking | Did the one experiment help? | Needs persisted experiments | Bridges analytics and AI coaching. |
@@ -655,9 +669,9 @@ Future data fields worth considering:
 
 - `plannedRiskAmount` or a reliable initial `stopLoss` snapshot for R.
 - `initialTarget` snapshot for planned reward/risk.
-- Market day snapshot: condition, themes, top gainers, stocks up 100%+, notes.
-- Candidate context: float, relative volume, daily percent change, catalyst,
-  theme, five-pillar score.
+- Dashboard market snapshot: condition, themes, opportunity quality, notes.
+- Daily recap opportunity context: top stocks, float, relative volume, daily
+  percent change, catalyst, theme, five-pillar score.
 - Structured setup taxonomy separate from free-form tags.
 - Structured process/emotion tags separate from setup tags.
 - Per-trade strategy/rule adherence fields.
