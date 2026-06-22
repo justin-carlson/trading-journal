@@ -19,6 +19,10 @@ timing, sizing, charts, and statistical patterns make the coach more grounded,
 but they are not a separate emotional or product destination. They support the
 conversation between Journal, Coach, and Dashboard.
 
+For the product flow of importing trades, opening the daily recap editor,
+attaching coach review, and promoting carry-forward cues, see
+`docs/product/DAILY_RECAP_FLOW.md`.
+
 ## Loop Summary
 
 ```text

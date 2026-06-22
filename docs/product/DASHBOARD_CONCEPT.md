@@ -47,7 +47,9 @@ returns the active lesson that should be visible on the next dashboard.
 **Dashboard prompts. Journal captures. Coach synthesizes. Dashboard reminds.**
 
 For the broader system model and infographic direction, see
-`docs/product/TRADING_JOURNAL_LEARNING_LOOP.md`.
+`docs/product/TRADING_JOURNAL_LEARNING_LOOP.md`. For the journal-side handoff,
+import-to-recap editor, coach review, and carry-forward workflow, see
+`docs/product/DAILY_RECAP_FLOW.md`.
 
 ```text
 Daily journal recap
