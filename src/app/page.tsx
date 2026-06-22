@@ -424,7 +424,7 @@ function LearningLoopSection() {
 
             <div className="absolute left-[390px] top-[290px] w-[300px] text-center">
               <h3 className="text-[28px] font-semibold leading-[1.15] tracking-[-0.02em]">
-                Trading Journal
+                Trading Journal AI
                 <br />
                 Learning Loop
               </h3>
@@ -457,7 +457,7 @@ function LearningLoopSection() {
             <div className="mx-auto grid h-[320px] max-w-[360px] place-items-center rounded-full border border-[var(--hairline)] bg-[radial-gradient(circle,rgba(29,178,107,.08),transparent_68%)]">
               <div className="rounded-full border border-[var(--border)] px-8 py-7 text-center">
                 <h3 className="text-[25px] font-semibold leading-[1.12] tracking-[-0.02em]">
-                  Trading Journal
+                  Trading Journal AI
                   <br />
                   Learning Loop
                 </h3>
@@ -474,7 +474,7 @@ function LearningLoopSection() {
         <div className="mt-9">
           <SectionEyebrow className="text-[var(--green)]">Surface responsibilities</SectionEyebrow>
           <h3 className="mt-[18px] text-balance text-[28px] font-semibold leading-[1.12] tracking-[-0.02em] md:text-[34px]">
-            Three surfaces, one job each
+            Three surfaces connected
           </h3>
           <p className="mt-[18px] max-w-[720px] text-pretty text-[16.5px] leading-[1.62] text-[var(--prose,#99a3b1)]">
             The journal keeps the story of the day. The coach turns that story into a
