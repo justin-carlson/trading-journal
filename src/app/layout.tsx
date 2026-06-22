@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     siteName: "Trading Journal AI",
     images: [
       {
-        url: "/og-image.png",
+        url: "/og-image-v2.png",
         width: 1200,
         height: 630,
         alt: "Trading Journal AI preview",
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Trading Journal AI",
     description: "Local-first trading journal for review, recaps, charts, and performance analysis.",
-    images: ["/og-image.png"],
+    images: ["/og-image-v2.png"],
   },
   icons: {
     icon: [{ url: "/brand/trading-journal-ai-icon.svg", type: "image/svg+xml" }],
